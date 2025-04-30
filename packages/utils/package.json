@@ -1,0 +1,24 @@
+{
+  "name": "@xion/generator-utils",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Sun Burnt",
+  "license": "MIT",
+  "keywords": [],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts"
+  },
+  "packageManager": "pnpm@10.5.2",
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "~5.7.2"
+  }
+}

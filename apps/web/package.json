@@ -14,11 +14,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@my/ui": "workspace:^",
-    "@my/utils": "workspace:^",
+    "@burnt-labs/abstraxion": "1.0.0-alpha.62",
+    "@cosmjs/cosmwasm-stargate": "^0.33.1",
+    "@cosmjs/launchpad": "^0.27.1",
+    "@cosmjs/proto-signing": "^0.33.1",
+    "@cosmjs/stargate": "^0.33.1",
+    "@cosmjs/tendermint-rpc": "^0.33.1",
     "@tailwindcss/vite": "^4.1.4",
+    "@tanstack/react-query": "^5.74.11",
+    "@xion/generator-ui": "workspace:^",
+    "@xion/generator-utils": "workspace:^",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "long": "^5.3.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.2.0",
+    "vite-plugin-node-polyfills": "^0.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

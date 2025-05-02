@@ -130,28 +130,30 @@ NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
               >
                 Copy
               </button>
-              <button
-                onClick={() => {
-                  const text = `NEXT_PUBLIC_CONTRACT_ADDRESS="${
-                    addresses?.userMapAddress || ""
-                  }"
+              {addresses && (
+                <button
+                  onClick={() => {
+                    const text = `NEXT_PUBLIC_CONTRACT_ADDRESS="${
+                      addresses?.userMapAddress || ""
+                    }"
 NEXT_PUBLIC_TREASURY_ADDRESS="${addresses?.treasuryAddress || ""}"
 NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
 NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
-                  const blob = new Blob([text], { type: "text/plain" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = ".env";
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }}
-                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
-              >
-                Download
-              </button>
+                    const blob = new Blob([text], { type: "text/plain" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = ".env";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
+                >
+                  Download
+                </button>
+              )}
             </div>
           </div>
         </section>

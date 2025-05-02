@@ -1,5 +1,5 @@
 {
-  "name": "my-web-app",
+  "name": "usermap-launcher",
   "compatibility_date": "2024-05-02",
   "site": {
     "bucket": "./dist",

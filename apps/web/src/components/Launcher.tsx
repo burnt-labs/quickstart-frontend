@@ -3,7 +3,6 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
-import { instantiateTest } from "../lib/transactions";
 import { instantiateUserMap, predictUserMapAddress } from "../lib/userMap";
 import { instantiateTreasury, predictTreasuryAddress } from "../lib/treasury";
 import { requestFaucetTokens } from "../lib/faucet";
@@ -32,11 +31,6 @@ export default function Launcher() {
       );
     }
   }, [userMapAddress, account]);
-
-  const handleInstantiate = async () => {
-    if (!client || !account) return;
-    await instantiateTest(client, account?.bech32Address);
-  };
 
   const handleSingleInstantiate = async () => {
     if (!client || !account) return;
@@ -77,7 +71,7 @@ export default function Launcher() {
         <MutedText>{client && account && `${account.bech32Address}`}</MutedText>
       </header>
       <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
-        <BaseButton disabled className="w-full" onClick={handleInstantiate}>
+        <BaseButton disabled className="w-full" onClick={() => {}}>
           Single Click Launcher
         </BaseButton>
 

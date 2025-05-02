@@ -1,66 +1,60 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
-import { instantiateUserMap, predictUserMapAddress } from "../lib/userMap";
-import { instantiateTreasury, predictTreasuryAddress } from "../lib/treasury";
-import { requestFaucetTokens } from "../lib/faucet";
 import { BaseButton } from "./ui/BaseButton";
 import { MutedText, ArticleTitle } from "./ui/Typography";
-
+import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
+import { SuccessMessage } from "./SuccessMessage";
+import { ErrorMessage } from "./ErrorMessage";
 export default function Launcher() {
+  const [userMapAddress, setUserMapAddress] = useState("");
+  const [treasuryAddress, setTreasuryAddress] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [textboxValue, setTextboxValue] = useState(
+    "Once you've launched your contract, copy and paste the following into your .env file"
+  );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const [userMapAddress, setUserMapAddress] = useState<string | null>(null);
-  const [treasuryAddress, setTreasuryAddress] = useState<string | null>(null);
   const instantiateSalt = "salt5";
 
-  useEffect(() => {
-    if (client && account) {
-      setUserMapAddress(
-        predictUserMapAddress(account.bech32Address, instantiateSalt)
+  const {
+    mutateAsync: launchTransaction,
+    isPending,
+    isSuccess,
+  } = useLaunchTransaction({
+    onSuccess: (data) => {
+      setUserMapAddress(data.userMapAddress);
+      setTreasuryAddress(data.treasuryAddress);
+      setTextboxValue(
+        `NEXT_PUBLIC_CONTRACT_ADDRESS="${userMapAddress}"
+NEXT_PUBLIC_TREASURY_ADDRESS="${treasuryAddress}"
+NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
+NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`
       );
-    }
-  }, [client, account]);
+      setTransactionHash(data.tx.transactionHash);
+      console.log("Transaction result:", data.tx);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+      console.error("Transaction failed:", error);
+    },
+  });
 
-  useEffect(() => {
-    if (userMapAddress && account) {
-      setTreasuryAddress(
-        predictTreasuryAddress(account.bech32Address, instantiateSalt)
-      );
-    }
-  }, [userMapAddress, account]);
-
-  const handleSingleInstantiate = async () => {
+  const handleLaunchClick = async () => {
     if (!client || !account) return;
-    await instantiateUserMap(
-      client,
-      account?.bech32Address,
-      instantiateSalt,
-      "batch"
-    );
-  };
 
-  const handleInstantiateTreasury = async () => {
-    if (!client || !account || !userMapAddress) return;
-    await instantiateTreasury(
-      client,
-      account?.bech32Address,
-      instantiateSalt,
-      userMapAddress,
-      "batch"
-    );
-  };
-
-  const handleRequestFaucetTokens = async () => {
-    if (!client || !account || !treasuryAddress) return;
-    await requestFaucetTokens(client, {
-      senderAddress: account.bech32Address,
-      treasuryAddress,
-      faucetAddress:
-        "xion187wad6jfrjaxw0fq3gxa55lueutrnastn3z4paax9rw5694eya6sg08jmy",
-    });
+    try {
+      await launchTransaction({
+        senderAddress: account.bech32Address,
+        saltString: instantiateSalt,
+        client,
+      });
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
   };
 
   return (
@@ -71,25 +65,21 @@ export default function Launcher() {
         <MutedText>{client && account && `${account.bech32Address}`}</MutedText>
       </header>
       <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
-        <BaseButton disabled className="w-full" onClick={() => {}}>
-          Single Click Launcher
-        </BaseButton>
-
-        <BaseButton className="w-full" onClick={handleSingleInstantiate}>
-          Instantiate UserMap -{" "}
-          <span className="text-xs break-all">{userMapAddress}</span>
-        </BaseButton>
-
-        <BaseButton className="w-full" onClick={handleInstantiateTreasury}>
-          Instantiate Treasury -{" "}
-          <span className="text-xs break-all">{treasuryAddress}</span>
-        </BaseButton>
-
-        <BaseButton className="w-full" onClick={handleRequestFaucetTokens}>
-          Request Faucet Tokens to{" "}
-          <span className="text-xs break-all">{treasuryAddress}</span>
+        <BaseButton
+          className="w-full"
+          onClick={handleLaunchClick}
+          disabled={isPending}
+        >
+          {isPending ? "Launching..." : "Single Click Launcher"}
         </BaseButton>
       </section>
+      {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
+      {errorMessage && (
+        <ErrorMessage
+          errorMessage={errorMessage}
+          onClose={() => setErrorMessage("")}
+        />
+      )}
       <header className="mb-4">
         <ArticleTitle>Copy & Paste</ArticleTitle>
         <MutedText>Copy and paste the following into your .env file</MutedText>
@@ -100,10 +90,7 @@ export default function Launcher() {
             readOnly
             className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
             rows={7}
-            value={`NEXT_PUBLIC_CONTRACT_ADDRESS="${userMapAddress}"
-NEXT_PUBLIC_TREASURY_ADDRESS="${treasuryAddress}"
-NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
-NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`}
+            value={textboxValue}
           />
           <div className="flex justify-end">
             <button

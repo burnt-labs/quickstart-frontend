@@ -1,4 +1,3 @@
-import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 import { MsgInstantiateContract2 } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { toUtf8 } from "@cosmjs/encoding";
@@ -63,55 +62,18 @@ export function generateTreasuryInitMsg({
   return treasuryInitMsg;
 }
 
-export async function instantiateTreasury(
-  client: GranteeSignerClient,
+export async function generateInstantiateTreasuryMessage(
   senderAddress: string,
   saltString: string,
   userMapAddress: string,
-  method: "single" | "batch" = "batch"
+  treasuryCodeId: number
 ) {
   const salt = new TextEncoder().encode(saltString);
-  const treasuryCodeId = 33;
-  const label = "Treasury";
-  const admin = senderAddress;
-
-  const predictedTreasuryAddress = predictInstantiate2Address({
-    senderAddress,
-    checksum:
-      "34C0515D8D5FFC3A37FFA71F24A3EE3CC10708DF8A9DD3E938610CD343524F78",
-    salt,
-  });
-
-  console.log(
-    "begin instantiating treasury - address will be:",
-    predictedTreasuryAddress
-  );
 
   const treasuryInitMsg = generateTreasuryInitMsg({
     senderAddress,
     userMapAddress,
   });
-
-  if (method === "single") {
-    const msgUserMap = await client.instantiate2(
-      senderAddress,
-      treasuryCodeId,
-      salt,
-      treasuryInitMsg,
-      label,
-      "auto",
-      { admin }
-    );
-
-    console.log({ msgUserMap });
-    console.log(
-      "address:",
-      msgUserMap.events[msgUserMap.events.length - 1].attributes[0].value
-    );
-    return msgUserMap;
-  }
-
-  console.log("begin version");
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
@@ -126,14 +88,8 @@ export async function instantiateTreasury(
 
   const wrappedMsg: EncodeObject = {
     typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract2",
-    value: MsgInstantiateContract2.encode(msgInitTreasuryMsg).finish(),
+    value: msgInitTreasuryMsg,
   };
 
-  const result = await client.signAndBroadcast(
-    senderAddress,
-    [wrappedMsg],
-    "auto"
-  );
-
-  console.log({ result });
+  return wrappedMsg;
 }

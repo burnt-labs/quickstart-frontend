@@ -1,31 +1,27 @@
-import { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { toUtf8 } from "@cosmjs/encoding";
+import { EncodeObject } from "@cosmjs/proto-signing";
 
-export async function requestFaucetTokens(
-  client: GranteeSignerClient,
-  {
-    senderAddress,
-    treasuryAddress,
-    faucetAddress,
-  }: {
-    senderAddress: string;
-    treasuryAddress: string;
-    faucetAddress: string;
-  }
+export async function generateRequestFaucetTokensMessage(
+  senderAddress: string,
+  treasuryAddress: string,
+  faucetAddress: string
 ) {
-  console.log("requesting funds to: ", treasuryAddress);
-
   const requestMsg = {
     faucet_to: { receiver_address: treasuryAddress },
   };
 
-  const response = await client.execute(
-    senderAddress,
-    faucetAddress,
-    requestMsg,
-    "auto"
-  );
+  const msgRequestMsg = MsgExecuteContract.fromPartial({
+    sender: senderAddress,
+    contract: faucetAddress,
+    msg: toUtf8(JSON.stringify(requestMsg)),
+    funds: [],
+  });
 
-  console.log("response: ", response);
+  const wrappedMsg: EncodeObject = {
+    typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+    value: msgRequestMsg,
+  };
 
-  return response;
+  return wrappedMsg;
 }

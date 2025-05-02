@@ -17,6 +17,7 @@ export async function requestFaucetTokens(
   const requestMsg = {
     faucet_to: { receiver_address: treasuryAddress },
   };
+
   const response = await client.execute(
     senderAddress,
     faucetAddress,

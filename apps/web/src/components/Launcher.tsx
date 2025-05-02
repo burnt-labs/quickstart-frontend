@@ -14,7 +14,7 @@ export default function Launcher() {
   const { client } = useAbstraxionSigningClient();
   const [userMapAddress, setUserMapAddress] = useState<string | null>(null);
   const [treasuryAddress, setTreasuryAddress] = useState<string | null>(null);
-  const instantiateSalt = "salt4";
+  const instantiateSalt = "salt5";
 
   useEffect(() => {
     if (client && account) {
@@ -38,7 +38,7 @@ export default function Launcher() {
       client,
       account?.bech32Address,
       instantiateSalt,
-      "single"
+      "batch"
     );
   };
 
@@ -49,7 +49,7 @@ export default function Launcher() {
       account?.bech32Address,
       instantiateSalt,
       userMapAddress,
-      "single"
+      "batch"
     );
   };
 

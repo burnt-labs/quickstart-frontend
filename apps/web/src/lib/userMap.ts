@@ -1,8 +1,8 @@
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 import { predictInstantiate2Address } from "./predictInstantiate2Address";
 import { MsgInstantiateContract2 } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Any } from "cosmjs-types/google/protobuf/any";
 import { toUtf8 } from "@cosmjs/encoding";
+import { EncodeObject } from "@cosmjs/proto-signing";
 
 export function predictUserMapAddress(
   senderAddress: string,
@@ -62,7 +62,7 @@ export async function instantiateUserMap(
     return msgUserMap;
   }
 
-  console.log("begin version");
+  console.log("begin batch version");
 
   const msgUserMapMessage = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
@@ -75,16 +75,16 @@ export async function instantiateUserMap(
     fixMsg: false,
   });
 
-  const wrappedMsg: Any = {
+  const wrappedMsg: EncodeObject = {
     typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract2",
     value: MsgInstantiateContract2.encode(msgUserMapMessage).finish(),
   };
 
-  const result = await client.signAndBroadcast(
-    senderAddress,
-    [wrappedMsg],
-    "auto"
-  );
+  const result = await client.signAndBroadcast(senderAddress, [wrappedMsg], {
+    amount: [{ denom: "uxion", amount: "200" }],
+    gas: "200000",
+    granter: "xion1pjaelan8kfs42wpfestv0cmhy65fyudkfjg8yyld5mjwu0f2cwaqr4eu6e",
+  });
 
   console.log({ result });
 }

@@ -2,14 +2,21 @@ import {
   MsgInstantiateContract2,
   MsgExecuteContract,
 } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { MsgExec } from "cosmjs-types/cosmos/authz/v1beta1/tx";
 import { Any } from "cosmjs-types/google/protobuf/any";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 import { predictInstantiate2Address } from "./predictInstantiate2Address";
+import {
+  encodeContractExecutionAuthorizationBase64,
+  STATIC_PERIODIC_ALLOWANCE_BASE64,
+} from "./encodeContractGrantAndAllowance";
 
 export async function instantiateTest(
   client: GranteeSignerClient,
   senderAddress: string
 ) {
+  const grantee =
+    "xion1pjaelan8kfs42wpfestv0cmhy65fyudkfjg8yyld5mjwu0f2cwaqr4eu6e";
   const encoder = new TextEncoder();
   const userMapSalt = encoder.encode("user-map-salt");
   const treasurySalt = encoder.encode("treasury-salt");
@@ -19,7 +26,6 @@ export async function instantiateTest(
   const label1 = "User Map";
   const label2 = "Treasury";
 
-  // Predict addresses
   const predictedUserMapAddress = predictInstantiate2Address({
     senderAddress,
     codeId: userMapCodeId,
@@ -28,11 +34,35 @@ export async function instantiateTest(
   });
   console.log({ predictedUserMapAddress });
 
+  const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
+    contractAddress: predictedUserMapAddress,
+    maxCalls: 5,
+    maxAmount: "2500",
+    denom: "uxion",
+  });
+
   const treasuryInitMsg = {
-    user_map: predictedUserMapAddress,
     admin: senderAddress,
+    type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
+    grant_configs: [
+      {
+        description: "Allow execution of the User Map Contract",
+        optional: false,
+        authorization: {
+          type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
+          value: contractAuthzBase64,
+        },
+      },
+    ],
+    fee_config: {
+      description:
+        "This pays fees for executing messages on the User Map contract.",
+      allowance: {
+        type_url: "/cosmos.feegrant.v1beta1.PeriodicAllowance",
+        value: STATIC_PERIODIC_ALLOWANCE_BASE64,
+      },
+    },
   };
-  console.log({ treasuryInitMsg });
 
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
@@ -42,7 +72,6 @@ export async function instantiateTest(
   });
   console.log({ predictedTreasuryAddress });
 
-  // 1. MsgInstantiateContract2 — User Map
   const msgUserMap = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
     codeId: BigInt(userMapCodeId),
@@ -53,9 +82,7 @@ export async function instantiateTest(
     fixMsg: true,
     funds: [],
   });
-  console.log({ msgUserMap });
 
-  // 2. MsgInstantiateContract2 — Treasury
   const msgTreasury = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
     codeId: BigInt(treasuryCodeId),
@@ -66,9 +93,7 @@ export async function instantiateTest(
     fixMsg: true,
     funds: [],
   });
-  console.log({ msgTreasury });
 
-  // 3. MsgExecuteContract — faucet_to
   const msgFaucet = MsgExecuteContract.fromPartial({
     sender: senderAddress,
     contract: "xion187wad6jfrjaxw0fq3gxa55lueutrnastn3z4paax9rw5694eya6sg08jmy",
@@ -81,8 +106,8 @@ export async function instantiateTest(
     ),
     funds: [],
   });
-  console.log({ msgFaucet });
-  const messages: Any[] = [
+
+  const wrappedMsgs: Any[] = [
     {
       typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract2",
       value: MsgInstantiateContract2.encode(msgUserMap).finish(),
@@ -97,18 +122,31 @@ export async function instantiateTest(
     },
   ];
 
-  console.log({ messages });
+  const msgExec: MsgExec = MsgExec.fromPartial({
+    grantee,
+    msgs: wrappedMsgs,
+  });
 
-  console.log("Simulating...", { senderAddress, messages });
-  const gasEstimation = await client.simulate(senderAddress, messages, "");
+  const execMsg: Any = {
+    typeUrl: "/cosmos.authz.v1beta1.MsgExec",
+    value: MsgExec.encode(msgExec).finish(),
+  };
+
+  const gasEstimation = await client.simulate(
+    senderAddress,
+    [execMsg],
+    undefined,
+    grantee
+  );
+
   console.log("Estimated gas:", gasEstimation);
 
   // const fee = {
-  //   amount: [{ denom: "uxion", amount: "500" }], // adjust as needed
+  //   amount: [{ denom: "uxion", amount: "500" }],
   //   gas: gasEstimation.toString(),
   // };
 
-  // const result = await client.signAndBroadcast(senderAddress, messages, fee);
+  // const result = await client.signAndBroadcast(grantee, [execMsg], fee);
   // console.log({ result });
 
   // return {

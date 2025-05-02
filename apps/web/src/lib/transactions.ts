@@ -75,6 +75,21 @@ export async function instantiateTest(
   });
   console.log({ predictedTreasuryAddress });
 
+  // TODO: remove this - testing address derivation. it works!
+  // console.log(
+  //   "my address",
+  //   predictInstantiate2Address({
+  //     senderAddress: "xion1mjc6ltqjz08g03scamg0jpvm4uvk02f6n0jz4u",
+  //     checksum: userMapChecksum,
+  //     salt: encoder.encode("salty"),
+  //   }),
+  //   {
+  //     senderAddress: "xion1mjc6ltqjz08g03scamg0jpvm4uvk02f6n0jz4u",
+  //     checksum: userMapChecksum,
+  //     salt: encoder.encode("salty"),
+  //   }
+  // );
+
   const msgUserMap = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
     codeId: BigInt(userMapCodeId),

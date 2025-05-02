@@ -15,15 +15,15 @@ export default function Launcher() {
   const { client } = useAbstraxionSigningClient();
   const [userMapAddress, setUserMapAddress] = useState<string | null>(null);
   const [treasuryAddress, setTreasuryAddress] = useState<string | null>(null);
-  const instantiateSalt = "salt3";
+  const instantiateSalt = "salt4";
 
   useEffect(() => {
-    if (account) {
+    if (client && account) {
       setUserMapAddress(
         predictUserMapAddress(account.bech32Address, instantiateSalt)
       );
     }
-  }, [account]);
+  }, [client, account]);
 
   useEffect(() => {
     if (userMapAddress && account) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
@@ -8,9 +8,17 @@ import { MutedText, ArticleTitle } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
+import { useStoredContractAddresses } from "../hooks/useStoredContractAddresses";
+import { ContractAddresses } from "../utils/localStorageClient";
+
+function getTextboxValue(addresses: ContractAddresses) {
+  return `NEXT_PUBLIC_CONTRACT_ADDRESS="${addresses.userMapAddress}"
+NEXT_PUBLIC_TREASURY_ADDRESS="${addresses.treasuryAddress}"
+NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
+NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
+}
+
 export default function Launcher() {
-  const [userMapAddress, setUserMapAddress] = useState("");
-  const [treasuryAddress, setTreasuryAddress] = useState("");
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [textboxValue, setTextboxValue] = useState(
@@ -18,7 +26,16 @@ export default function Launcher() {
   );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const instantiateSalt = "salt5";
+  const instantiateSalt = "salt7";
+  const { addresses, saveAddresses } = useStoredContractAddresses(
+    account?.bech32Address
+  );
+
+  useEffect(() => {
+    if (addresses) {
+      setTextboxValue(getTextboxValue(addresses));
+    }
+  }, [addresses]);
 
   const {
     mutateAsync: launchTransaction,
@@ -26,14 +43,12 @@ export default function Launcher() {
     isSuccess,
   } = useLaunchTransaction({
     onSuccess: (data) => {
-      setUserMapAddress(data.userMapAddress);
-      setTreasuryAddress(data.treasuryAddress);
-      setTextboxValue(
-        `NEXT_PUBLIC_CONTRACT_ADDRESS="${userMapAddress}"
-NEXT_PUBLIC_TREASURY_ADDRESS="${treasuryAddress}"
-NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
-NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`
-      );
+      const newAddresses = {
+        userMapAddress: data.userMapAddress,
+        treasuryAddress: data.treasuryAddress,
+      };
+      saveAddresses(newAddresses);
+      setTextboxValue(getTextboxValue(newAddresses));
       setTransactionHash(data.tx.transactionHash);
       console.log("Transaction result:", data.tx);
     },
@@ -58,56 +73,89 @@ NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`
   };
 
   return (
-    <article className="w-full mx-auto ">
-      <header className="mb-4">
-        <h1>User Map Launcher</h1>
-        <ArticleTitle>Welcome {client ? "back" : "to Xion"}</ArticleTitle>
-        <MutedText>{client && account && `${account.bech32Address}`}</MutedText>
-      </header>
-      <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
-        <BaseButton
-          className="w-full"
-          onClick={handleLaunchClick}
-          disabled={isPending}
-        >
-          {isPending ? "Launching..." : "Single Click Launcher"}
-        </BaseButton>
-      </section>
-      {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
-      {errorMessage && (
-        <ErrorMessage
-          errorMessage={errorMessage}
-          onClose={() => setErrorMessage("")}
-        />
-      )}
-      <header className="mb-4">
-        <ArticleTitle>Copy & Paste</ArticleTitle>
-        <MutedText>Copy and paste the following into your .env file</MutedText>
-      </header>
-      <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8">
-        <div className="flex flex-col gap-2">
-          <textarea
-            readOnly
-            className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
-            rows={7}
-            value={textboxValue}
+    <div className="flex flex-col w-full max-w-screen-md mx-auto">
+      <article className="w-full mx-auto ">
+        <header className="mb-4">
+          <ArticleTitle>User Map Launcher</ArticleTitle>
+          <MutedText>
+            {client && account && `${account.bech32Address}`}
+          </MutedText>
+        </header>
+        <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
+          <BaseButton
+            className="w-full"
+            onClick={handleLaunchClick}
+            disabled={isPending}
+          >
+            {isPending ? "Launching..." : "Launch User Map & Fund Treasury"}
+          </BaseButton>
+        </section>
+      </article>
+      <article className="w-full mx-auto ">
+        {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
+        {errorMessage && (
+          <ErrorMessage
+            errorMessage={errorMessage}
+            onClose={() => setErrorMessage("")}
           />
-          <div className="flex justify-end">
-            <button
-              onClick={() => {
-                const text = `NEXT_PUBLIC_CONTRACT_ADDRESS="${userMapAddress}"
-NEXT_PUBLIC_TREASURY_ADDRESS="${treasuryAddress}"
+        )}
+      </article>
+      <article className="w-full mx-auto ">
+        <header className="mb-4">
+          <ArticleTitle>Copy & Paste</ArticleTitle>
+          <MutedText>
+            Copy and paste the following into your .env file
+          </MutedText>
+        </header>
+        <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8">
+          <div className="flex flex-col gap-2">
+            <textarea
+              readOnly
+              className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
+              rows={7}
+              value={textboxValue}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  const text = `NEXT_PUBLIC_CONTRACT_ADDRESS="${
+                    addresses?.userMapAddress || ""
+                  }"
+NEXT_PUBLIC_TREASURY_ADDRESS="${addresses?.treasuryAddress || ""}"
 NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
 NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
-                navigator.clipboard.writeText(text);
-              }}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
-            >
-              Copy
-            </button>
+                  navigator.clipboard.writeText(text);
+                }}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
+              >
+                Copy
+              </button>
+              <button
+                onClick={() => {
+                  const text = `NEXT_PUBLIC_CONTRACT_ADDRESS="${
+                    addresses?.userMapAddress || ""
+                  }"
+NEXT_PUBLIC_TREASURY_ADDRESS="${addresses?.treasuryAddress || ""}"
+NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
+NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
+                  const blob = new Blob([text], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = ".env";
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
+              >
+                Download
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
-    </article>
+        </section>
+      </article>
+    </div>
   );
 }

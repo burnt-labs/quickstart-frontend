@@ -29,11 +29,6 @@ export async function assembleTransaction({
   const userMapAddress = predictUserMapAddress(senderAddress, saltString);
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
-  console.log("predict addresses:", {
-    userMapAddress,
-    treasuryAddress,
-  });
-
   const userMapMessage = await generateInstantiateUserMapMessage(
     senderAddress,
     saltString,

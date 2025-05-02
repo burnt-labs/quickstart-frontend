@@ -1,17 +1,22 @@
-import { useAppState } from "../state/AppStateContext";
+import { useModal } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { SectionTitle } from "./ui/Typography";
+import { SubsectionTitle } from "./ui/Typography";
 
 export function NotLoggedIn() {
-  const { setLoggedIn } = useAppState();
+  const [, setShowModal] = useModal();
+
+  const handleLoginClick = () => {
+    setShowModal(true);
+  };
+
   return (
-    <article className="max-w-screen-md mx-auto bg-white/5 rounded-lg p-8 flex flex-col">
-      <header>
-        <h1>Welcome to Xion</h1>
+    <article className="w-full mx-auto flex flex-col">
+      <header className="mb-4">
+        <h1>Welcome to XION User Map Dapp Launcher</h1>
+        <SubsectionTitle>Login to get started</SubsectionTitle>
       </header>
-      <section className="w-full flex flex-col gap-4">
-        <SectionTitle>Login to get started</SectionTitle>
-        <BaseButton className="w-full" onClick={() => setLoggedIn(true)}>
+      <section className="w-full bg-white/5 rounded-lg p-8">
+        <BaseButton className="w-full" onClick={handleLoginClick}>
           Login
         </BaseButton>
       </section>

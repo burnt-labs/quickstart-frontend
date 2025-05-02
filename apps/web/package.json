@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@burnt-labs/abstraxion": "1.0.0-alpha.62",
+    "@burnt-labs/ui": "0.1.0-alpha.17",
     "@cosmjs/cosmwasm-stargate": "^0.33.1",
     "@cosmjs/launchpad": "^0.27.1",
     "@cosmjs/proto-signing": "^0.33.1",

@@ -71,6 +71,14 @@ export function Subtitle({ children, className, ...props }: TitleProps) {
   );
 }
 
+export function MutedText({ children, className, ...props }: TitleProps) {
+  return (
+    <p className={cn("text-gray-400", className)} {...props}>
+      {children}
+    </p>
+  );
+}
+
 export function TextExamples() {
   return (
     <div>

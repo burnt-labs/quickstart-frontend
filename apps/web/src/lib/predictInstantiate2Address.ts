@@ -1,41 +1,23 @@
-import { toUtf8, fromBech32, toBech32 } from "@cosmjs/encoding";
-import { sha256 as sha256js } from "@noble/hashes/sha256";
+import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
 
 /**
  * Predicts the contract address for MsgInstantiateContract2.
+ * https://github.com/burnt-labs/xion-dapp-example/blob/c18a81bf8872cc81b2117aa725d4179f9c97941a/transactions/initialize-smart-wallet.tsx#L4
  */
 export function predictInstantiate2Address({
   senderAddress,
-  codeId,
+  checksum,
   salt,
-  initMsg,
-  prefix = "xion",
-  fixMsg = true,
 }: {
   senderAddress: string;
-  codeId: number;
+  checksum: string;
   salt: Uint8Array;
-  initMsg: Record<string, unknown>;
-  prefix?: string;
-  fixMsg?: boolean;
 }): string {
-  const senderCanonical = fromBech32(senderAddress).data;
-  const codeIdBytes = new Uint8Array(8);
-  new DataView(codeIdBytes.buffer).setBigUint64(0, BigInt(codeId), true);
+  const byteArray = new Uint8Array(32);
+  for (let i = 0; i < checksum.length; i += 2) {
+    byteArray[i / 2] = parseInt(checksum.substring(i, i + 2), 16);
+  }
+  const addy = instantiate2Address(byteArray, senderAddress, salt, "xion");
 
-  const initMsgBytes = fixMsg
-    ? toUtf8(JSON.stringify(initMsg))
-    : new Uint8Array([]);
-
-  const concat = new Uint8Array([
-    0xff,
-    ...senderCanonical,
-    ...codeIdBytes,
-    ...salt,
-    ...initMsgBytes,
-  ]);
-
-  const hash = sha256js(concat);
-  const addressBytes = hash.slice(0, 20);
-  return toBech32(prefix, addressBytes);
+  return addy;
 }

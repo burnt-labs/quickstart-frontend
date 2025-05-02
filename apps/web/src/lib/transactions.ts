@@ -21,22 +21,24 @@ export async function instantiateTest(
   const userMapSalt = encoder.encode("user-map-salt");
   const treasurySalt = encoder.encode("treasury-salt");
   const userMapCodeId = 973;
+  const userMapChecksum =
+    "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1";
   const treasuryCodeId = 33;
+  const treasuryChecksum =
+    "34C0515D8D5FFC3A37FFA71F24A3EE3CC10708DF8A9DD3E938610CD343524F78";
 
   const label1 = "User Map";
   const label2 = "Treasury";
 
   const predictedUserMapAddress = predictInstantiate2Address({
     senderAddress,
-    codeId: userMapCodeId,
+    checksum: userMapChecksum,
     salt: userMapSalt,
-    initMsg: {},
   });
   console.log({ predictedUserMapAddress });
 
   const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
     contractAddress: predictedUserMapAddress,
-    maxCalls: 5,
     maxAmount: "2500",
     denom: "uxion",
   });
@@ -64,11 +66,12 @@ export async function instantiateTest(
     },
   };
 
+  console.log({ treasuryInitMsg });
+
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
-    codeId: treasuryCodeId,
+    checksum: treasuryChecksum,
     salt: treasurySalt,
-    initMsg: treasuryInitMsg,
   });
   console.log({ predictedTreasuryAddress });
 

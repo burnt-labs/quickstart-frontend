@@ -81,7 +81,7 @@ export async function instantiateTest(
     label: label1,
     msg: encoder.encode(JSON.stringify({})),
     salt: userMapSalt,
-    admin: "",
+    admin: senderAddress,
     fixMsg: false,
     funds: [],
   });

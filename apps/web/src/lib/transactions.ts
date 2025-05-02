@@ -82,7 +82,7 @@ export async function instantiateTest(
     msg: encoder.encode(JSON.stringify({})),
     salt: userMapSalt,
     admin: "",
-    fixMsg: true,
+    fixMsg: false,
     funds: [],
   });
 
@@ -93,7 +93,7 @@ export async function instantiateTest(
     msg: encoder.encode(JSON.stringify(treasuryInitMsg)),
     salt: treasurySalt,
     admin: senderAddress,
-    fixMsg: true,
+    fixMsg: false,
     funds: [],
   });
 

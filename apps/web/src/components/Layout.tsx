@@ -1,6 +1,5 @@
 import {
   Abstraxion,
-  useAbstraxionAccount,
   useAbstraxionSigningClient,
   useModal,
 } from "@burnt-labs/abstraxion";
@@ -10,10 +9,7 @@ import { NotLoggedIn } from "./NotLoggedIn";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { client, logout } = useAbstraxionSigningClient();
-  const { data: account } = useAbstraxionAccount();
   const [, setShowModal] = useModal();
-
-  console.log({ account, client });
 
   const handleLoginClick = () => {
     if (client) {

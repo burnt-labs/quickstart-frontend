@@ -2,12 +2,18 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
+import { instantiateTest } from "../lib/transactions";
 import { BaseButton } from "./ui/BaseButton";
 import { SectionTitle, MutedText } from "./ui/Typography";
 
 export default function Launcher() {
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
+
+  const handleInstantiate = async () => {
+    if (!client || !account) return;
+    await instantiateTest(client, account?.bech32Address);
+  };
 
   return (
     <article className="w-full mx-auto ">
@@ -17,7 +23,9 @@ export default function Launcher() {
         <MutedText>{client && account && `${account.bech32Address}`}</MutedText>
       </header>
       <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8">
-        <BaseButton className="w-full">Start</BaseButton>
+        <BaseButton className="w-full" onClick={handleInstantiate}>
+          Start
+        </BaseButton>
       </section>
     </article>
   );

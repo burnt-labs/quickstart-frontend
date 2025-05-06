@@ -128,7 +128,7 @@ export default function Launcher() {
               {addresses && (
                 <DownloadButton
                   text={textboxValue}
-                  fileName=".env"
+                  fileName=".env.local"
                   label="Download"
                   className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
                 />

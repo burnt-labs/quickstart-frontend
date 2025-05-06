@@ -12,6 +12,7 @@ import { useStoredContractAddresses } from "../hooks/useStoredContractAddresses"
 import { ContractAddresses } from "../utils/localStorageClient";
 import { DownloadButton } from "./DownloadButton";
 import { INSTANTIATE_SALT } from "../config/constants";
+
 function getTextboxValue(addresses: ContractAddresses) {
   return `NEXT_PUBLIC_CONTRACT_ADDRESS="${addresses.userMapAddress}"
 NEXT_PUBLIC_TREASURY_ADDRESS="${addresses.treasuryAddress}"

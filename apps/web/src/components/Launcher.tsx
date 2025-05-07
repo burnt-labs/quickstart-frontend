@@ -11,6 +11,7 @@ import { ErrorMessage } from "./ErrorMessage";
 import { useStoredContractAddresses } from "../hooks/useStoredContractAddresses";
 import { ContractAddresses } from "../utils/localStorageClient";
 import { DownloadButton } from "./DownloadButton";
+import { INSTANTIATE_SALT } from "../config/constants";
 
 function getTextboxValue(addresses: ContractAddresses) {
   return `NEXT_PUBLIC_CONTRACT_ADDRESS="${addresses.userMapAddress}"
@@ -27,7 +28,9 @@ export default function Launcher() {
   );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const instantiateSalt = "salt7";
+
+  // Grabs the stored contract addresses from local storage
+  // this is used as the flag to check if the contract has been launched
   const { addresses, saveAddresses } = useStoredContractAddresses(
     account?.bech32Address
   );
@@ -65,7 +68,7 @@ export default function Launcher() {
     try {
       await launchTransaction({
         senderAddress: account.bech32Address,
-        saltString: instantiateSalt,
+        saltString: INSTANTIATE_SALT,
         client,
       });
     } catch (error) {
@@ -82,15 +85,17 @@ export default function Launcher() {
             {client && account && `${account.bech32Address}`}
           </MutedText>
         </header>
-        <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
-          <BaseButton
-            className="w-full"
-            onClick={handleLaunchClick}
-            disabled={isPending}
-          >
-            {isPending ? "Launching..." : "Launch User Map & Fund Treasury"}
-          </BaseButton>
-        </section>
+        {!addresses && (
+          <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
+            <BaseButton
+              className="w-full"
+              onClick={handleLaunchClick}
+              disabled={isPending}
+            >
+              {isPending ? "Launching..." : "Launch User Map & Fund Treasury"}
+            </BaseButton>
+          </section>
+        )}
       </article>
       <article className="w-full mx-auto ">
         {isSuccess && <SuccessMessage transactionHash={transactionHash} />}

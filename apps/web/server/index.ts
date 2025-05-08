@@ -4,6 +4,9 @@ import {
   INSTANTIATE_SALT,
   FRONTEND_TEMPLATES,
 } from "../src/config/constants";
+import { formatEnvText } from "../src/utils/format-env-text";
+
+/* types */
 
 // required params for the instantiate2 call
 interface Config {
@@ -32,8 +35,10 @@ const defaultConfig: Config = {
   salt: INSTANTIATE_SALT,
   download: false,
   template: FRONTEND_TEMPLATES.NEXTJS,
-  verify: false,
+  verify: true,
 };
+
+/* utils */
 
 function getConfigFromParams(params: URLSearchParams): RequestParams {
   return {
@@ -59,8 +64,15 @@ function mergeConfigWithDefaults(params: RequestParams): Config {
   };
 }
 
+async function verifyContractExists(address: string): Promise<boolean> {
+  const REST = import.meta.env.VITE_REST_URL;
+  const response = await fetch(`${REST}/cosmwasm/wasm/v1/contract/${address}`);
+  return response.status === 200;
+}
+
+/* handlers */
 export default {
-  fetch(request) {
+  async fetch(request) {
     const url = new URL(request.url);
     const params = getConfigFromParams(url.searchParams);
 
@@ -71,30 +83,45 @@ export default {
     const config = mergeConfigWithDefaults(params);
     const saltEncoded = new TextEncoder().encode(config.salt);
 
-    const returnValue = JSON.stringify({
-      ...config,
-      user_address: params.user_address,
-      saltEncoded,
+    const appAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.app_checksum,
+      salt: saltEncoded,
     });
 
-    // const appAddress = predictInstantiate2Address({
-    //   senderAddress: params.user_address,
-    //   checksum: config.app_checksum,
-    //   salt: saltEncoded,
-    // });
+    const treasuryAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.treasury_checksum,
+      salt: saltEncoded,
+    });
 
-    // const treasuryAddress = predictInstantiate2Address({
-    //   senderAddress: params.user_address,
-    //   checksum: config.treasury_checksum,
-    //   salt: saltEncoded,
-    // });
+    if (config.verify) {
+      const appExists = await verifyContractExists(appAddress);
+      const treasuryExists = await verifyContractExists(treasuryAddress);
+
+      if (!appExists || !treasuryExists) {
+        return new Response("Contract does not exist", { status: 400 });
+      }
+    }
 
     if (url.pathname.startsWith("/env/")) {
-      return new Response(returnValue, {
-        headers: {
-          "Content-Type": "text/plain",
+      const envText = formatEnvText(
+        {
+          appAddress,
+          treasuryAddress,
         },
-      });
+        config.template
+      );
+
+      const headers: Record<string, string> = {
+        "Content-Type": "text/plain",
+      };
+
+      if (config.download) {
+        headers["Content-Disposition"] = "attachment; filename=.env.local";
+      }
+
+      return new Response(envText, { headers });
     }
     return new Response(null, { status: 404 });
   },

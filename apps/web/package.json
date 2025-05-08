@@ -2,8 +2,8 @@
   "name": "web",
   "private": true,
   "version": "0.0.1",
-  "description": "Monorepo Tutorial Frontend",
-  "author": "Michael Merz",
+  "description": "App Quick Start Frontend",
+  "author": "Sun Burnt",
   "license": "MIT",
   "keywords": [],
   "type": "module",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@burnt-labs/abstraxion": "1.0.0-alpha.62",
     "@burnt-labs/ui": "0.1.0-alpha.17",
+    "@cloudflare/vite-plugin": "^1.1.1",
     "@cosmjs/cosmwasm-stargate": "^0.33.1",
     "@cosmjs/encoding": "^0.33.1",
     "@cosmjs/launchpad": "^0.27.1",

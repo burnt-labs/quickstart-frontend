@@ -73,9 +73,24 @@ export function Subtitle({ children, className, ...props }: TitleProps) {
 
 export function MutedText({ children, className, ...props }: TitleProps) {
   return (
-    <p className={cn("text-gray-400", className)} {...props}>
+    <p className={cn("text-gray-400 break-all", className)} {...props}>
       {children}
     </p>
+  );
+}
+
+export function ArticleSubheading({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mt-6 mb-2">
+      <h5 className="text-base font-semibold text-gray-200">{title}</h5>
+      <p className="text-sm text-gray-400">{description}</p>
+    </div>
   );
 }
 

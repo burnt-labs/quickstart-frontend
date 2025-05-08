@@ -1,11 +1,10 @@
 {
   "name": "usermap-launcher",
   "compatibility_date": "2024-05-02",
+  "main": "server/index.ts",
   "assets": {
-    "directory": "./dist"
-  },
-  "build": {
-    "command": "pnpm run build"
+    "directory": "./dist",
+    "binding": "ASSETS"
   },
   "routes": [
     {

@@ -22,3 +22,11 @@ export const VERSIONS: Record<string, Version> = {
 };
 
 export const INSTANTIATE_SALT = VERSIONS[CURRENT_VERSION].salt;
+export const INSTANTIATE_CHECKSUMS = VERSIONS[CURRENT_VERSION].checksums;
+
+export enum FRONTEND_TEMPLATES {
+  NEXTJS = "nextjs",
+  EXPO = "expo",
+}
+
+export const DEFAULT_FRONTEND_TEMPLATE = FRONTEND_TEMPLATES.NEXTJS;

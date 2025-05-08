@@ -4,25 +4,26 @@ import {
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { MutedText, ArticleTitle } from "./ui/Typography";
+import { MutedText, ArticleTitle, ArticleSubheading } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
 import { useStoredContractAddresses } from "../hooks/useStoredContractAddresses";
-import { ContractAddresses } from "../utils/localStorageClient";
 import { DownloadButton } from "./DownloadButton";
-import { INSTANTIATE_SALT } from "../config/constants";
-
-function getTextboxValue(addresses: ContractAddresses) {
-  return `NEXT_PUBLIC_CONTRACT_ADDRESS="${addresses.userMapAddress}"
-NEXT_PUBLIC_TREASURY_ADDRESS="${addresses.treasuryAddress}"
-NEXT_PUBLIC_RPC_URL="https://rpc.xion-testnet-2.burnt.com:443"
-NEXT_PUBLIC_REST_URL="https://api.xion-testnet-2.burnt.com"`;
-}
+import {
+  INSTANTIATE_SALT,
+  DEFAULT_FRONTEND_TEMPLATE,
+  FRONTEND_TEMPLATES,
+} from "../config/constants";
+import { formatEnvText } from "../utils/format-env-text";
+import { FrameworkCard } from "./FrameworkCard";
 
 export default function Launcher() {
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [frontendTemplate, setFrontendTemplate] = useState(
+    DEFAULT_FRONTEND_TEMPLATE
+  );
   const [textboxValue, setTextboxValue] = useState(
     "Once you've launched your contract, copy and paste the following into your .env file"
   );
@@ -37,9 +38,9 @@ export default function Launcher() {
 
   useEffect(() => {
     if (addresses) {
-      setTextboxValue(getTextboxValue(addresses));
+      setTextboxValue(formatEnvText(addresses, frontendTemplate));
     }
-  }, [addresses]);
+  }, [addresses, frontendTemplate]);
 
   const {
     mutateAsync: launchTransaction,
@@ -48,11 +49,11 @@ export default function Launcher() {
   } = useLaunchTransaction({
     onSuccess: (data) => {
       const newAddresses = {
-        userMapAddress: data.userMapAddress,
+        appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
       };
       saveAddresses(newAddresses);
-      setTextboxValue(getTextboxValue(newAddresses));
+      setTextboxValue(formatEnvText(newAddresses));
       setTransactionHash(data.tx.transactionHash);
       console.log("Transaction result:", data.tx);
     },
@@ -107,12 +108,40 @@ export default function Launcher() {
         )}
       </article>
       <article className="w-full mx-auto ">
-        <header className="mb-4">
-          <ArticleTitle>Copy & Paste</ArticleTitle>
-          <MutedText>
-            Copy and paste the following into your .env file
-          </MutedText>
-        </header>
+        <section className="flex flex-col gap-4">
+          <ArticleSubheading
+            title="Frontend Template"
+            description="Select the frontend template you want to use"
+          />
+
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <FrameworkCard
+              name={FRONTEND_TEMPLATES.NEXTJS}
+              description={
+                "A Next.js frontend for interacting with the JSON Store smart contract on the XION blockchain."
+              }
+              selected={FRONTEND_TEMPLATES.NEXTJS === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.NEXTJS)}
+              templateUrl={
+                "https://github.com/burnt-labs/xion-user-map-json-store-frontend"
+              }
+            />
+
+            <FrameworkCard
+              name={FRONTEND_TEMPLATES.EXPO}
+              description={
+                "An Expo frontend for interacting with the JSON Store smart contract on the XION blockchain."
+              }
+              selected={FRONTEND_TEMPLATES.EXPO === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.EXPO)}
+              templateUrl={"https://github.com/burnt-labs/abstraxion-expo-demo"}
+            />
+          </div>
+        </section>
+        <ArticleSubheading
+          title="Copy & Paste"
+          description="Copy and paste the following into your .env file"
+        />
         <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8">
           <div className="flex flex-col gap-2">
             <textarea

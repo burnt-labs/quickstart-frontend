@@ -1,5 +1,5 @@
 export interface ContractAddresses {
-  userMapAddress: string;
+  appAddress: string;
   treasuryAddress: string;
 }
 

@@ -67,10 +67,14 @@ function getConfigFromParams(params: URLSearchParams): RequestParams {
     app_checksum: params.get("app_checksum") || undefined,
     treasury_checksum: params.get("treasury_checksum") || undefined,
     salt: params.get("salt") || undefined,
-    download: params.get("download") === "true",
+    download: params.has("download")
+      ? params.get("download") === "true"
+      : undefined,
     template: params.get("template") as FRONTEND_TEMPLATES | undefined,
-    verify: params.get("verify") === "true",
-    values_only: params.get("values_only") === "true",
+    verify: params.has("verify") ? params.get("verify") === "true" : undefined,
+    values_only: params.has("values_only")
+      ? params.get("values_only") === "true"
+      : undefined,
   };
 }
 
@@ -99,6 +103,7 @@ export default {
     }
 
     const config = mergeConfigWithDefaults(params);
+
     const saltEncoded = new TextEncoder().encode(config.salt);
 
     const appAddress = predictInstantiate2Address({

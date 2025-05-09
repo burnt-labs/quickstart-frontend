@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
@@ -8,7 +9,6 @@ import { MutedText, ArticleTitle, SectionSubheading } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
-import { useStoredContractAddresses } from "../hooks/useStoredContractAddresses";
 import { DownloadButton } from "./DownloadButton";
 import {
   INSTANTIATE_SALT,
@@ -19,12 +19,16 @@ import { formatEnvText } from "@burnt-labs/quick-start-utils";
 import { FrameworkCard } from "./FrameworkCard";
 import CopyButton from "./CopyButton";
 import { OneLiner } from "./OneLiner";
-import { useExistingContracts } from "../hooks/useExistingContracts";
+import {
+  useExistingContracts,
+  EXISTING_CONTRACTS_QUERY_KEY,
+} from "../hooks/useExistingContracts";
 
 const RPC_URL = import.meta.env.VITE_RPC_URL;
 const REST_URL = import.meta.env.VITE_REST_URL;
 
 export default function Launcher() {
+  const queryClient = useQueryClient();
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [frontendTemplate, setFrontendTemplate] = useState(
@@ -35,17 +39,7 @@ export default function Launcher() {
   );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const { data: existingContracts } = useExistingContracts(
-    account?.bech32Address
-  );
-
-  console.log({ existingContracts });
-
-  // Grabs the stored contract addresses from local storage
-  // this is used as the flag to check if the contract has been launched
-  const { addresses, saveAddresses } = useStoredContractAddresses(
-    account?.bech32Address
-  );
+  const { data: addresses } = useExistingContracts(account?.bech32Address);
 
   useEffect(() => {
     if (addresses) {
@@ -65,7 +59,9 @@ export default function Launcher() {
         appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
       };
-      saveAddresses(newAddresses);
+      queryClient.invalidateQueries({
+        queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
+      });
       setTextboxValue(
         formatEnvText(newAddresses, frontendTemplate, RPC_URL, REST_URL)
       );

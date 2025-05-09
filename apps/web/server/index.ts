@@ -1,7 +1,7 @@
 import {
   INSTANTIATE_CHECKSUMS,
   INSTANTIATE_SALT,
-  FRONTEND_TEMPLATES,
+  DEFAULT_FRONTEND_TEMPLATE,
   type FrontendTemplate,
 } from "../src/config/constants";
 import {
@@ -42,7 +42,7 @@ const defaultConfig: Config = {
   treasury_checksum: INSTANTIATE_CHECKSUMS.treasury,
   salt: INSTANTIATE_SALT,
   download: false,
-  template: FRONTEND_TEMPLATES.NEXTJS,
+  template: DEFAULT_FRONTEND_TEMPLATE,
   verify: true,
   values_only: false,
 };

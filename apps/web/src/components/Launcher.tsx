@@ -128,24 +128,24 @@ export default function Launcher() {
 
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <FrameworkCard
-              name={FRONTEND_TEMPLATES.NEXTJS}
+              name={FRONTEND_TEMPLATES.WEBAPP}
               description={
-                "A Next.js frontend for interacting with the JSON Store smart contract on the XION blockchain."
+                "A WebApp frontend for interacting with the JSON Store smart contract on the XION blockchain."
               }
-              selected={FRONTEND_TEMPLATES.NEXTJS === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.NEXTJS)}
+              selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
               templateUrl={
                 "https://github.com/burnt-labs/xion-user-map-json-store-frontend"
               }
             />
 
             <FrameworkCard
-              name={FRONTEND_TEMPLATES.EXPO}
+              name={FRONTEND_TEMPLATES.MOBILE}
               description={
-                "An Expo frontend for interacting with the JSON Store smart contract on the XION blockchain."
+                "A mobile frontend for interacting with the JSON Store smart contract on the XION blockchain."
               }
-              selected={FRONTEND_TEMPLATES.EXPO === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.EXPO)}
+              selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
               templateUrl={"https://github.com/burnt-labs/abstraxion-expo-demo"}
             />
           </div>

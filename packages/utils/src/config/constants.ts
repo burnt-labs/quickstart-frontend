@@ -25,12 +25,12 @@ export const INSTANTIATE_SALT = VERSIONS[CURRENT_VERSION].salt;
 export const INSTANTIATE_CHECKSUMS = VERSIONS[CURRENT_VERSION].checksums;
 
 export enum FRONTEND_TEMPLATES {
-  NEXTJS = "nextjs",
-  EXPO = "expo",
+  WEBAPP = "webapp",
+  MOBILE = "mobile",
 }
 
 export type FrontendTemplate =
   (typeof FRONTEND_TEMPLATES)[keyof typeof FRONTEND_TEMPLATES];
 
 export const DEFAULT_FRONTEND_TEMPLATE: FrontendTemplate =
-  FRONTEND_TEMPLATES.NEXTJS;
+  FRONTEND_TEMPLATES.WEBAPP;

@@ -29,4 +29,8 @@ export enum FRONTEND_TEMPLATES {
   EXPO = "expo",
 }
 
-export const DEFAULT_FRONTEND_TEMPLATE = FRONTEND_TEMPLATES.NEXTJS;
+export type FrontendTemplate =
+  (typeof FRONTEND_TEMPLATES)[keyof typeof FRONTEND_TEMPLATES];
+
+export const DEFAULT_FRONTEND_TEMPLATE: FrontendTemplate =
+  FRONTEND_TEMPLATES.NEXTJS;

@@ -2,6 +2,7 @@ import {
   INSTANTIATE_CHECKSUMS,
   INSTANTIATE_SALT,
   FRONTEND_TEMPLATES,
+  type FrontendTemplate,
 } from "../src/config/constants";
 import {
   formatEnvText,
@@ -19,7 +20,7 @@ interface Config {
   treasury_checksum: string;
   salt: string;
   download: boolean;
-  template: FRONTEND_TEMPLATES;
+  template: FrontendTemplate;
   verify: boolean;
   values_only: boolean;
 }
@@ -31,7 +32,7 @@ interface RequestParams {
   treasury_checksum?: string;
   salt?: string;
   download?: boolean;
-  template?: FRONTEND_TEMPLATES;
+  template?: FrontendTemplate;
   verify?: boolean;
   values_only?: boolean;
 }
@@ -70,7 +71,7 @@ function getConfigFromParams(params: URLSearchParams): RequestParams {
     download: params.has("download")
       ? params.get("download") === "true"
       : undefined,
-    template: params.get("template") as FRONTEND_TEMPLATES | undefined,
+    template: params.get("template") as FrontendTemplate | undefined,
     verify: params.has("verify") ? params.get("verify") === "true" : undefined,
     values_only: params.has("values_only")
       ? params.get("values_only") === "true"

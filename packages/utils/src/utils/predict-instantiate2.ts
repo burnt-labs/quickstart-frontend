@@ -44,26 +44,29 @@ export function instantiate2Address(
   salt: Uint8Array,
   prefix: string
 ): string {
-  const creatorData = fromBech32(creator).data;
+  try {
+    const creatorData = fromBech32(creator).data;
+    const msgData = new Uint8Array();
 
-  const msgData = new Uint8Array();
+    if (salt.length < 1 || salt.length > 64)
+      throw new Error("Salt must be between 1 and 64 bytes");
 
-  if (salt.length < 1 || salt.length > 64)
-    throw new Error("Salt must be between 1 and 64 bytes");
-
-  const key = new Uint8Array([
-    ...toAscii("wasm"),
-    0x00,
-    ...toUint64(checksum.length),
-    ...checksum,
-    ...toUint64(creatorData.length),
-    ...creatorData,
-    ...toUint64(salt.length),
-    ...salt,
-    ...toUint64(msgData.length),
-    ...msgData,
-  ]);
-  const addressData = hash("module", key);
-  const address = toBech32(prefix, addressData);
-  return address;
+    const key = new Uint8Array([
+      ...toAscii("wasm"),
+      0x00,
+      ...toUint64(checksum.length),
+      ...checksum,
+      ...toUint64(creatorData.length),
+      ...creatorData,
+      ...toUint64(salt.length),
+      ...salt,
+      ...toUint64(msgData.length),
+      ...msgData,
+    ]);
+    const addressData = hash("module", key);
+    const address = toBech32(prefix, addressData);
+    return address;
+  } catch (error) {
+    throw new Error("Invalid creator address");
+  }
 }

@@ -19,6 +19,7 @@ import { formatEnvText } from "@burnt-labs/quick-start-utils";
 import { FrameworkCard } from "./FrameworkCard";
 import CopyButton from "./CopyButton";
 import { OneLiner } from "./OneLiner";
+import { useExistingContracts } from "../hooks/useExistingContracts";
 
 const RPC_URL = import.meta.env.VITE_RPC_URL;
 const REST_URL = import.meta.env.VITE_REST_URL;
@@ -34,6 +35,11 @@ export default function Launcher() {
   );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
+  const { data: existingContracts } = useExistingContracts(
+    account?.bech32Address
+  );
+
+  console.log({ existingContracts });
 
   // Grabs the stored contract addresses from local storage
   // this is used as the flag to check if the contract has been launched

@@ -6,7 +6,10 @@ import {
 import {
   formatEnvText,
   predictInstantiate2Address,
+  verifyContractExists,
 } from "@burnt-labs/quick-start-utils";
+
+const REST_URL = import.meta.env.VITE_REST_URL;
 
 /* types */
 
@@ -18,6 +21,7 @@ interface Config {
   download: boolean;
   template: FRONTEND_TEMPLATES;
   verify: boolean;
+  values_only: boolean;
 }
 
 // params from the request - defaults to the values in defaultConfig
@@ -29,6 +33,7 @@ interface RequestParams {
   download?: boolean;
   template?: FRONTEND_TEMPLATES;
   verify?: boolean;
+  values_only?: boolean;
 }
 
 const defaultConfig: Config = {
@@ -38,9 +43,23 @@ const defaultConfig: Config = {
   download: false,
   template: FRONTEND_TEMPLATES.NEXTJS,
   verify: true,
+  values_only: false,
 };
 
 /* utils */
+
+function validateParams(params: RequestParams): {
+  isValid: boolean;
+  error?: string;
+} {
+  if (!params.user_address || params.user_address.length < 43) {
+    return {
+      isValid: false,
+      error: "User address must be at least 43 characters long",
+    };
+  }
+  return { isValid: true };
+}
 
 function getConfigFromParams(params: URLSearchParams): RequestParams {
   return {
@@ -48,9 +67,10 @@ function getConfigFromParams(params: URLSearchParams): RequestParams {
     app_checksum: params.get("app_checksum") || undefined,
     treasury_checksum: params.get("treasury_checksum") || undefined,
     salt: params.get("salt") || undefined,
-    download: params.has("download"),
+    download: params.get("download") === "true",
     template: params.get("template") as FRONTEND_TEMPLATES | undefined,
-    verify: params.has("verify"),
+    verify: params.get("verify") === "true",
+    values_only: params.get("values_only") === "true",
   };
 }
 
@@ -63,13 +83,8 @@ function mergeConfigWithDefaults(params: RequestParams): Config {
     download: params.download ?? defaultConfig.download,
     template: params.template || defaultConfig.template,
     verify: params.verify ?? defaultConfig.verify,
+    values_only: params.values_only ?? defaultConfig.values_only,
   };
-}
-
-async function verifyContractExists(address: string): Promise<boolean> {
-  const REST = import.meta.env.VITE_REST_URL;
-  const response = await fetch(`${REST}/cosmwasm/wasm/v1/contract/${address}`);
-  return response.status === 200;
 }
 
 /* handlers */
@@ -78,8 +93,9 @@ export default {
     const url = new URL(request.url);
     const params = getConfigFromParams(url.searchParams);
 
-    if (!params.user_address) {
-      return new Response("User address is required", { status: 400 });
+    const validation = validateParams(params);
+    if (!validation.isValid) {
+      return new Response(validation.error, { status: 400 });
     }
 
     const config = mergeConfigWithDefaults(params);
@@ -98,8 +114,15 @@ export default {
     });
 
     if (config.verify) {
-      const appExists = await verifyContractExists(appAddress);
-      const treasuryExists = await verifyContractExists(treasuryAddress);
+      const appExists = await verifyContractExists({
+        address: appAddress,
+        restUrl: REST_URL,
+      });
+
+      const treasuryExists = await verifyContractExists({
+        address: treasuryAddress,
+        restUrl: REST_URL,
+      });
 
       if (!appExists || !treasuryExists) {
         return new Response("Contract does not exist", { status: 400 });
@@ -116,6 +139,10 @@ export default {
         import.meta.env.VITE_RPC_URL,
         import.meta.env.VITE_REST_URL
       );
+
+      if (config.values_only) {
+        return Response.json({ appAddress, treasuryAddress });
+      }
 
       const headers: Record<string, string> = {
         "Content-Type": "text/plain",

@@ -20,6 +20,7 @@ export default defineConfig({
         "events",
         "fs",
         "path",
+        "module",
       ],
     }),
   ],

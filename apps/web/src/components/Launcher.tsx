@@ -14,6 +14,7 @@ import {
   INSTANTIATE_SALT,
   DEFAULT_FRONTEND_TEMPLATE,
   FRONTEND_TEMPLATES,
+  type FrontendTemplate,
 } from "../config/constants";
 import { formatEnvText } from "@burnt-labs/quick-start-utils";
 import { FrameworkCard } from "./FrameworkCard";
@@ -31,9 +32,9 @@ export default function Launcher() {
   const queryClient = useQueryClient();
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [frontendTemplate, setFrontendTemplate] = useState<
-    (typeof FRONTEND_TEMPLATES)[keyof typeof FRONTEND_TEMPLATES]
-  >(DEFAULT_FRONTEND_TEMPLATE);
+  const [frontendTemplate, setFrontendTemplate] = useState<FrontendTemplate>(
+    DEFAULT_FRONTEND_TEMPLATE
+  );
   const [textboxValue, setTextboxValue] = useState(
     "Once you've launched your contract, copy and paste the following into your .env file"
   );

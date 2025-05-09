@@ -1,13 +1,17 @@
 import { ContractAddresses } from "../types";
-import { FRONTEND_TEMPLATES } from "../config/constants";
+import {
+  DEFAULT_FRONTEND_TEMPLATE,
+  FRONTEND_TEMPLATES,
+  FrontendTemplate,
+} from "../config/constants";
 
 export function formatEnvText(
   addresses: ContractAddresses,
-  template: FRONTEND_TEMPLATES = FRONTEND_TEMPLATES.NEXTJS,
+  template: FrontendTemplate = DEFAULT_FRONTEND_TEMPLATE,
   rpcUrl: string,
   restUrl: string
 ) {
-  if (template === FRONTEND_TEMPLATES.NEXTJS) {
+  if (template === FRONTEND_TEMPLATES.WEBAPP) {
     return `NEXT_PUBLIC_CONTRACT_ADDRESS="${addresses.appAddress}"
 NEXT_PUBLIC_TREASURY_ADDRESS="${addresses.treasuryAddress}"
 NEXT_PUBLIC_RPC_URL="${rpcUrl}"

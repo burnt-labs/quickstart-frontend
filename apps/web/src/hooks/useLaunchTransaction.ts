@@ -14,7 +14,7 @@ interface LaunchTransactionParams {
 
 interface LaunchTransactionResult {
   tx: DeliverTxResponse;
-  userMapAddress: string;
+  appAddress: string;
   treasuryAddress: string;
 }
 
@@ -27,7 +27,7 @@ export function useLaunchTransaction(
 ) {
   return useMutation<LaunchTransactionResult, Error, LaunchTransactionParams>({
     mutationFn: async ({ senderAddress, saltString, client }) => {
-      const { messages, userMapAddress, treasuryAddress } =
+      const { messages, appAddress, treasuryAddress } =
         await assembleTransaction({
           senderAddress,
           saltString,
@@ -41,7 +41,7 @@ export function useLaunchTransaction(
 
       return {
         tx,
-        userMapAddress,
+        appAddress,
         treasuryAddress,
       };
     },

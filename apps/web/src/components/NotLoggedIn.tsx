@@ -12,7 +12,7 @@ export function NotLoggedIn() {
   return (
     <article className="w-full mx-auto flex flex-col max-w-screen-md">
       <header className="mb-4">
-        <h1>Welcome to XION User Map Dapp Launcher</h1>
+        <h1>Welcome to XION Dev Quick Start</h1>
         <SubsectionTitle>Login to get started</SubsectionTitle>
       </header>
       <section className="w-full bg-white/5 rounded-lg p-8">

@@ -26,7 +26,7 @@ export async function assembleTransaction({
     throw new Error("Missing environment variables");
   }
 
-  const userMapAddress = predictUserMapAddress(senderAddress, saltString);
+  const appAddress = predictUserMapAddress(senderAddress, saltString);
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const userMapMessage = await generateInstantiateUserMapMessage(
@@ -37,7 +37,7 @@ export async function assembleTransaction({
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
     saltString,
-    userMapAddress,
+    appAddress,
     TREASURY_CODE_ID
   );
   const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
@@ -48,7 +48,7 @@ export async function assembleTransaction({
 
   messages.push(userMapMessage, treasuryMessage, requestFaucetTokensMessage);
 
-  return { messages, userMapAddress, treasuryAddress };
+  return { messages, appAddress, treasuryAddress };
 }
 
 export async function executeBatchTransaction({

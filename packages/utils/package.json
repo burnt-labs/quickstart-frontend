@@ -1,5 +1,5 @@
 {
-  "name": "@xion/generator-utils",
+  "name": "@burnt-labs/quick-start-utils",
   "version": "0.0.1",
   "description": "",
   "author": "Sun Burnt",
@@ -20,5 +20,10 @@
   "devDependencies": {
     "tsup": "^8.4.0",
     "typescript": "~5.7.2"
+  },
+  "dependencies": {
+    "@cosmjs/crypto": "^0.33.1",
+    "@cosmjs/encoding": "^0.33.1",
+    "@cosmjs/math": "^0.33.1"
   }
 }

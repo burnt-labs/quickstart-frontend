@@ -10,6 +10,11 @@
       "dependsOn": ["^build"]
     },
     "lint": {},
-    "test": {}
+    "test": {},
+    "deploy": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    }
   }
 }

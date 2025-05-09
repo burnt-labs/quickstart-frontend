@@ -1,14 +1,15 @@
 {
-  "name": "usermap-generator",
+  "name": "dev-quick-start",
   "version": "0.0.1",
-  "description": "Generate configs for user map contract",
+  "description": "Quick start for XION Dev",
   "author": "Sun Burnt",
   "license": "MIT",
   "keywords": [],
   "main": "index.js",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "deploy": "turbo run deploy"
   },
   "packageManager": "pnpm@10.5.2",
   "devDependencies": {

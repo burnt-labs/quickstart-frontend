@@ -1,7 +1,8 @@
-import { predictInstantiate2Address } from "./predictInstantiate2Address";
+import { predictInstantiate2Address } from "@burnt-labs/quick-start-utils";
 import { MsgInstantiateContract2 } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { toUtf8 } from "@cosmjs/encoding";
 import { EncodeObject } from "@cosmjs/proto-signing";
+import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export function predictUserMapAddress(
   senderAddress: string,
@@ -11,8 +12,7 @@ export function predictUserMapAddress(
 
   const predictedUserMapAddress = predictInstantiate2Address({
     senderAddress,
-    checksum:
-      "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1",
+    checksum: INSTANTIATE_CHECKSUMS.userMap,
     salt,
   });
 

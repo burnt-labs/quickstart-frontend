@@ -79,7 +79,7 @@ export function MutedText({ children, className, ...props }: TitleProps) {
   );
 }
 
-export function ArticleSubheading({
+export function SectionSubheading({
   title,
   description,
 }: {

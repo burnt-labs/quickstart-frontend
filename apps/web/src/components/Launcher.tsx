@@ -4,7 +4,7 @@ import {
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { MutedText, ArticleTitle, ArticleSubheading } from "./ui/Typography";
+import { MutedText, ArticleTitle, SectionSubheading } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
@@ -15,8 +15,13 @@ import {
   DEFAULT_FRONTEND_TEMPLATE,
   FRONTEND_TEMPLATES,
 } from "../config/constants";
-import { formatEnvText } from "../utils/format-env-text";
+import { formatEnvText } from "@burnt-labs/quick-start-utils";
 import { FrameworkCard } from "./FrameworkCard";
+import CopyButton from "./CopyButton";
+import { OneLiner } from "./OneLiner";
+
+const RPC_URL = import.meta.env.VITE_RPC_URL;
+const REST_URL = import.meta.env.VITE_REST_URL;
 
 export default function Launcher() {
   const [transactionHash, setTransactionHash] = useState("");
@@ -38,7 +43,9 @@ export default function Launcher() {
 
   useEffect(() => {
     if (addresses) {
-      setTextboxValue(formatEnvText(addresses, frontendTemplate));
+      setTextboxValue(
+        formatEnvText(addresses, frontendTemplate, RPC_URL, REST_URL)
+      );
     }
   }, [addresses, frontendTemplate]);
 
@@ -53,7 +60,9 @@ export default function Launcher() {
         treasuryAddress: data.treasuryAddress,
       };
       saveAddresses(newAddresses);
-      setTextboxValue(formatEnvText(newAddresses));
+      setTextboxValue(
+        formatEnvText(newAddresses, frontendTemplate, RPC_URL, REST_URL)
+      );
       setTransactionHash(data.tx.transactionHash);
       console.log("Transaction result:", data.tx);
     },
@@ -81,7 +90,7 @@ export default function Launcher() {
     <div className="flex flex-col w-full max-w-screen-md mx-auto">
       <article className="w-full mx-auto ">
         <header className="mb-4">
-          <ArticleTitle>User Map Launcher</ArticleTitle>
+          <ArticleTitle>Quick Start</ArticleTitle>
           <MutedText>
             {client && account && `${account.bech32Address}`}
           </MutedText>
@@ -109,7 +118,7 @@ export default function Launcher() {
       </article>
       <article className="w-full mx-auto ">
         <section className="flex flex-col gap-4">
-          <ArticleSubheading
+          <SectionSubheading
             title="Frontend Template"
             description="Select the frontend template you want to use"
           />
@@ -138,35 +147,41 @@ export default function Launcher() {
             />
           </div>
         </section>
-        <ArticleSubheading
-          title="Copy & Paste"
-          description="Copy and paste the following into your .env file"
-        />
-        <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8">
-          <div className="flex flex-col gap-2">
-            <textarea
-              readOnly
-              className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
-              rows={7}
-              value={textboxValue}
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(textboxValue);
-                }}
-                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
-              >
-                Copy
-              </button>
-              {addresses && (
-                <DownloadButton
-                  text={textboxValue}
-                  fileName=".env.local"
-                  label="Download"
-                  className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
-                />
-              )}
+
+        <section className="flex flex-col gap-4">
+          <SectionSubheading
+            title="One-liner"
+            description="Copy and paste the following into your terminal within your project directory"
+          />
+          <OneLiner
+            url={`${window.location.origin}/env/?user_address=${account?.bech32Address}&template=${frontendTemplate}&download=true`}
+          />
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <SectionSubheading
+            title="Copy & Paste"
+            description="Copy and paste the following into your .env file"
+          />
+          <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
+            <div className="flex flex-col gap-2">
+              <textarea
+                readOnly
+                className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
+                rows={7}
+                value={textboxValue}
+              />
+              <div className="flex justify-end gap-2">
+                <CopyButton text={textboxValue} />
+                {addresses && (
+                  <DownloadButton
+                    text={textboxValue}
+                    fileName=".env.local"
+                    label="Download"
+                    className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
+                  />
+                )}
+              </div>
             </div>
           </div>
         </section>

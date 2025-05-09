@@ -1,10 +1,12 @@
-import { predictInstantiate2Address } from "../src/lib/predictInstantiate2Address";
 import {
   INSTANTIATE_CHECKSUMS,
   INSTANTIATE_SALT,
   FRONTEND_TEMPLATES,
 } from "../src/config/constants";
-import { formatEnvText } from "../src/utils/format-env-text";
+import {
+  formatEnvText,
+  predictInstantiate2Address,
+} from "@burnt-labs/quick-start-utils";
 
 /* types */
 
@@ -110,7 +112,9 @@ export default {
           appAddress,
           treasuryAddress,
         },
-        config.template
+        config.template,
+        import.meta.env.VITE_RPC_URL,
+        import.meta.env.VITE_REST_URL
       );
 
       const headers: Record<string, string> = {

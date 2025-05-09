@@ -1,7 +1,7 @@
 {
-  "name": "usermap-generator",
+  "name": "dev-quick-start",
   "version": "0.0.1",
-  "description": "Generate configs for user map contract",
+  "description": "Quick start for XION Dev",
   "author": "Sun Burnt",
   "license": "MIT",
   "keywords": [],

@@ -11,7 +11,16 @@ export default defineConfig({
     tailwindcss(),
     cloudflare(),
     nodePolyfills({
-      include: ["buffer", "util", "stream", "crypto", "vm"],
+      include: [
+        "buffer",
+        "util",
+        "stream",
+        "crypto",
+        "vm",
+        "events",
+        "fs",
+        "path",
+      ],
     }),
   ],
 });

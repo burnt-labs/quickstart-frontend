@@ -5,7 +5,8 @@ import {
   encodeContractExecutionAuthorizationBase64,
   STATIC_PERIODIC_ALLOWANCE_BASE64,
 } from "./encodeContractGrantAndAllowance";
-import { predictInstantiate2Address } from "./predictInstantiate2Address";
+import { predictInstantiate2Address } from "@burnt-labs/quick-start-utils";
+import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export function predictTreasuryAddress(
   senderAddress: string,
@@ -15,8 +16,7 @@ export function predictTreasuryAddress(
 
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
-    checksum:
-      "34C0515D8D5FFC3A37FFA71F24A3EE3CC10708DF8A9DD3E938610CD343524F78",
+    checksum: INSTANTIATE_CHECKSUMS.treasury,
     salt,
   });
 

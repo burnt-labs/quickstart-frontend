@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@xion/generator-ui/dist/index.css";
+import "@burnt-labs/quick-start-ui/dist/index.css";
 import "./index.css";
 import App from "./App.tsx";
 

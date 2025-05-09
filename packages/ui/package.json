@@ -1,8 +1,8 @@
 {
-  "name": "@xion/generator-ui",
+  "name": "@burnt-labs/quick-start-ui",
   "private": true,
   "version": "0.0.1",
-  "description": "Usermap Generator UI",
+  "description": "Quick start UI",
   "author": "Sun Burnt",
   "license": "MIT",
   "keywords": [],

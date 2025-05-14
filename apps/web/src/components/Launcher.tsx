@@ -168,7 +168,7 @@ export default function Launcher() {
         <section className="flex flex-col gap-4">
           <SectionSubheading
             title="Option 2: Manual Copy & Paste"
-            description="Prefer to do it yourself? Copy and paste the following into your .env file:"
+            description="Prefer to do it yourself? Copy and paste the following into your .env.local file:"
           />
           <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
             <div className="flex flex-col gap-2">

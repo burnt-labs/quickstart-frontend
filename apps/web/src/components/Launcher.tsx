@@ -24,8 +24,8 @@ import {
   EXISTING_CONTRACTS_QUERY_KEY,
 } from "../hooks/useExistingContracts";
 
-const RPC_URL = import.meta.env.VITE_RPC_URL;
-const REST_URL = import.meta.env.VITE_REST_URL;
+const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
+const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
 
 export default function Launcher() {
   const queryClient = useQueryClient();
@@ -152,22 +152,22 @@ export default function Launcher() {
 
         <section className="flex flex-col gap-4 mb-6">
           <SectionSubheading
-            title="Set Up Environment Variables"
-            description="You can choose one of the following methods to set up your environment variables."
+            title="Set Up Your Project"
+            description="You can choose one of the following methods to set up your project."
           />
           <SectionSubheading
             title="Option 1: One-liner (Recommended)"
-            description="Run this in your terminal from within your project directory to automatically download and save the environment file:"
+            description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
           />
           <OneLiner
-            url={`${window.location.origin}/env/?user_address=${account?.bech32Address}&template=${frontendTemplate}&download=true`}
+            url={`${window.location.origin}/install/${account?.bech32Address ? `?user_address=${account?.bech32Address}` : ''}${account?.bech32Address ? '&' : '?'}template=${frontendTemplate}`}
           />
         </section>
 
         <section className="flex flex-col gap-4">
           <SectionSubheading
-            title="Option 2: Manual Copy & Paste"
-            description="Prefer to do it yourself? Copy and paste the following into your .env.local file:"
+            title="Option 2: Manual Environment Setup"
+            description="Already have the project cloned? Copy and paste the following into your .env.local file:"
           />
           <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
             <div className="flex flex-col gap-2">

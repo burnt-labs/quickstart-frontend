@@ -9,7 +9,6 @@ import { MutedText, ArticleTitle, SectionSubheading } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
-import { DownloadButton } from "./DownloadButton";
 import {
   INSTANTIATE_SALT,
   DEFAULT_FRONTEND_TEMPLATE,
@@ -176,14 +175,6 @@ export default function Launcher() {
               />
               <div className="flex justify-end gap-2">
                 <CopyButton text={textboxValue} />
-                {addresses && (
-                  <DownloadButton
-                    text={textboxValue}
-                    fileName=".env.local"
-                    label="Download"
-                    className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
-                  />
-                )}
               </div>
             </div>
           </div>

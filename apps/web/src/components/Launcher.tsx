@@ -119,7 +119,7 @@ export default function Launcher() {
         )}
       </article>
       <article className="w-full mx-auto ">
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 mb-6">
           <SectionSubheading
             title="Frontend Template"
             description="Select the frontend template you want to use"
@@ -150,10 +150,14 @@ export default function Launcher() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 mb-6">
           <SectionSubheading
-            title="One-liner"
-            description="Copy and paste the following into your terminal within your project directory"
+            title="Set Up Environment Variables"
+            description="You can choose one of the following methods to set up your environment variables."
+          />
+          <SectionSubheading
+            title="Option 1: One-liner (Recommended)"
+            description="Run this in your terminal from within your project directory to automatically download and save the environment file:"
           />
           <OneLiner
             url={`${window.location.origin}/env/?user_address=${account?.bech32Address}&template=${frontendTemplate}&download=true`}
@@ -162,8 +166,8 @@ export default function Launcher() {
 
         <section className="flex flex-col gap-4">
           <SectionSubheading
-            title="Copy & Paste"
-            description="Copy and paste the following into your .env file"
+            title="Option 2: Manual Copy & Paste"
+            description="Prefer to do it yourself? Copy and paste the following into your .env.local file:"
           />
           <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
             <div className="flex flex-col gap-2">

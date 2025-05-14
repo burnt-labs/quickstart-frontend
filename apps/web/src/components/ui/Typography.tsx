@@ -87,7 +87,7 @@ export function SectionSubheading({
   description: string;
 }) {
   return (
-    <div className="mt-6 mb-2">
+    <div className="mb-2">
       <h5 className="text-base font-semibold text-gray-200">{title}</h5>
       <p className="text-sm text-gray-400">{description}</p>
     </div>

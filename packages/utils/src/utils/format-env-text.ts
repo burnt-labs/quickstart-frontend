@@ -18,8 +18,8 @@ NEXT_PUBLIC_RPC_URL="${rpcUrl}"
 NEXT_PUBLIC_REST_URL="${restUrl}"`;
   }
 
-  return `USER_MAP_CONTRACT_ADDRESS="${addresses.appAddress}"
-TREASURY_CONTRACT_ADDRESS="${addresses.treasuryAddress}"
-RPC_ENDPOINT="${rpcUrl}"
-REST_ENDPOINT="${restUrl}"`;
+  return `EXPO_PUBLIC_USER_MAP_CONTRACT_ADDRESS="${addresses.appAddress}"
+EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS="${addresses.treasuryAddress}"
+EXPO_PUBLIC_RPC_ENDPOINT="${rpcUrl}"
+EXPO_PUBLIC_REST_ENDPOINT="${restUrl}"`;
 }

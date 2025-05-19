@@ -174,6 +174,7 @@ export default {
     }
 
     if (url.pathname.startsWith("/env/")) {
+      console.log({ config });
       const envText = formatEnvText(
         {
           appAddress,

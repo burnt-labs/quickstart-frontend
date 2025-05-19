@@ -1,4 +1,4 @@
-const CURRENT_VERSION = "0.0.1";
+const CURRENT_VERSION = "0.0.2";
 
 type Version = {
   salt: string;
@@ -17,6 +17,15 @@ export const VERSIONS: Record<string, Version> = {
         "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1",
       treasury:
         "34C0515D8D5FFC3A37FFA71F24A3EE3CC10708DF8A9DD3E938610CD343524F78",
+    },
+  },
+  "0.0.2": {
+    salt: "xion-rocks",
+    checksums: {
+      userMap:
+        "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1",
+      treasury:
+        "732B29E349126C2285FE3240A620BDDF914D91093325BB7968C40BD6988ACDCB",
     },
   },
 };

@@ -24,10 +24,10 @@ export function predictTreasuryAddress(
 }
 
 export function generateTreasuryInitMsg({
-  senderAddress,
+  adminAddress,
   userMapAddress,
 }: {
-  senderAddress: string;
+  adminAddress: string;
   userMapAddress: string;
 }) {
   const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
@@ -37,7 +37,8 @@ export function generateTreasuryInitMsg({
   });
 
   const treasuryInitMsg = {
-    admin: senderAddress,
+    admin: adminAddress,
+    params: {},
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
     grant_configs: [
       {
@@ -70,14 +71,16 @@ export async function generateInstantiateTreasuryMessage(
 ) {
   const salt = new TextEncoder().encode(saltString);
 
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
+
   const treasuryInitMsg = generateTreasuryInitMsg({
-    senderAddress,
+    adminAddress: treasuryAddress,
     userMapAddress,
   });
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,
-    admin: senderAddress,
+    admin: treasuryAddress,
     codeId: BigInt(treasuryCodeId),
     label: `Treasury`,
     msg: toUtf8(JSON.stringify(treasuryInitMsg)),

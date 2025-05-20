@@ -1,6 +1,16 @@
-# Basic Monorepo template
+# XION User Map Generator
 
-A modern, ESM-only monorepo starter built from scratch using the latest tooling:
+A developer tool for quickly deploying and interacting with User Map and Treasury contracts on the XION blockchain.
+
+## 🚀 What is this?
+
+The XION User Map Generator is a web application that helps developers:
+
+1. **Deploy Smart Contracts** - Easily deploy User Map and Treasury contracts to the XION blockchain
+2. **Configure Frontend Projects** - Generate environment variables for your frontend applications
+3. **Quick Start Development** - Choose between web and mobile frontend templates with one-click setup
+
+## 🛠️ Technical Stack
 
 - 🧱 **pnpm workspaces** for dependency management  
 - ⚡ **Turborepo** for build orchestration  
@@ -8,9 +18,8 @@ A modern, ESM-only monorepo starter built from scratch using the latest tooling:
 - 🛠️ **Vite 6** for blazing-fast dev and build  
 - 🌈 **Tailwind CSS 4** via `@tailwindcss/vite`  
 - ⚛️ **React 19** with automatic runtime  
-- 📦 Shared packages: `@my/ui` and `@my/utils`
-
-> This is a from-scratch setup with zero legacy overhead — designed to power design systems, app frontends, tooling, and future dapps.
+- 🔗 **Cosmos SDK** integration for XION blockchain interaction
+- 🔐 **Abstraxion** for XION wallet authentication
 
 ---
 

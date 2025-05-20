@@ -2,6 +2,7 @@ import {
   INSTANTIATE_CHECKSUMS,
   INSTANTIATE_SALT,
   DEFAULT_FRONTEND_TEMPLATE,
+  FRONTEND_TEMPLATES,
   type FrontendTemplate,
 } from "../src/config/constants";
 import {
@@ -9,6 +10,7 @@ import {
   predictInstantiate2Address,
   verifyContractExists,
 } from "@burnt-labs/quick-start-utils";
+import installerTemplate from "../templates/installer.sh.template?raw";
 
 const REST_URL = import.meta.env.VITE_REST_URL;
 
@@ -96,6 +98,41 @@ function mergeConfigWithDefaults(params: RequestParams): Config {
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+
+    // Handle install.sh script request
+    if (url.pathname.startsWith("/install/")) {
+      // Get user_address and template from query parameters if available
+      const userAddress = url.searchParams.get("user_address") || "";
+      const template = url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
+
+      // Set repository URL based on template
+      const repoUrl = template === FRONTEND_TEMPLATES.MOBILE 
+        ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
+        : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
+
+      const repoName = template === FRONTEND_TEMPLATES.MOBILE 
+        ? "xion-mobile-quickstart"
+        : "xion-web-quickstart";
+
+      // Use the imported template
+      let templateContent = installerTemplate;
+
+      // Replace placeholders with actual values
+      const serverUrl = url.origin;
+      templateContent = templateContent
+        .replace(/{{repoUrl}}/g, repoUrl)
+        .replace(/{{repoName}}/g, repoName)
+        .replace(/{{template}}/g, template)
+        .replace(/{{serverUrl}}/g, serverUrl)
+        .replace(/{{userAddress}}/g, userAddress);
+
+      return new Response(templateContent, {
+        headers: {
+          "Content-Type": "text/plain",
+        },
+      });
+    }
+
     const params = getConfigFromParams(url.searchParams);
 
     const validation = validateParams(params);
@@ -119,6 +156,7 @@ export default {
       salt: saltEncoded,
     });
 
+    // Skip verification if verify=false in the query parameters
     if (config.verify) {
       const appExists = await verifyContractExists({
         address: appAddress,
@@ -142,8 +180,8 @@ export default {
           treasuryAddress,
         },
         config.template,
-        import.meta.env.VITE_RPC_URL,
-        import.meta.env.VITE_REST_URL
+        import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443",
+        import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com"
       );
 
       if (config.values_only) {

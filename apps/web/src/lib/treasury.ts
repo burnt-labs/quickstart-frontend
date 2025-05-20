@@ -38,7 +38,13 @@ export function generateTreasuryInitMsg({
 
   const treasuryInitMsg = {
     admin: adminAddress,
-    params: {},
+    params: {
+      redirect_url: "http://localhost:3000",
+      icon_url:
+        "https://api.dicebear.com/9.x/identicon/svg?rowColor=333333,d1d1d1&backgroundColor=000000&seed=" +
+        adminAddress,
+      metadata: "{}",
+    },
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
     grant_configs: [
       {

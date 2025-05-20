@@ -23,6 +23,7 @@ import {
   useExistingContracts,
   EXISTING_CONTRACTS_QUERY_KEY,
 } from "../hooks/useExistingContracts";
+import { buildInstallUrl } from "../utils/url-util";
 
 const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
 const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
@@ -160,7 +161,7 @@ export default function Launcher() {
             description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
           />
           <OneLiner
-            url={`${window.location.origin}/install/${account?.bech32Address ? `?user_address=${account?.bech32Address}` : ''}${account?.bech32Address ? '&' : '?'}template=${frontendTemplate}`}
+            url={buildInstallUrl(window.location.origin, account?.bech32Address, frontendTemplate)}
           />
         </section>
 

@@ -103,16 +103,19 @@ export default {
     if (url.pathname.startsWith("/install/")) {
       // Get user_address and template from query parameters if available
       const userAddress = url.searchParams.get("user_address") || "";
-      const template = url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
+      const template =
+        url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
 
       // Set repository URL based on template
-      const repoUrl = template === FRONTEND_TEMPLATES.MOBILE 
-        ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
-        : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
+      const repoUrl =
+        template === FRONTEND_TEMPLATES.MOBILE
+          ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
+          : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
 
-      const repoName = template === FRONTEND_TEMPLATES.MOBILE 
-        ? "xion-mobile-quickstart"
-        : "xion-web-quickstart";
+      const repoName =
+        template === FRONTEND_TEMPLATES.MOBILE
+          ? "xion-mobile-quickstart"
+          : "xion-web-quickstart";
 
       // Use the imported template
       let templateContent = installerTemplate;
@@ -180,7 +183,8 @@ export default {
           treasuryAddress,
         },
         config.template,
-        import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443",
+        import.meta.env.VITE_RPC_URL ||
+          "https://rpc.xion-testnet-2.burnt.com:443",
         import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com"
       );
 

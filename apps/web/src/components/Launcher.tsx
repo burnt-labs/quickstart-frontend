@@ -25,8 +25,10 @@ import {
 } from "../hooks/useExistingContracts";
 import { buildInstallUrl } from "../utils/url-util";
 
-const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
-const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
+const RPC_URL =
+  import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
+const REST_URL =
+  import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
 
 export default function Launcher() {
   const queryClient = useQueryClient();
@@ -116,72 +118,80 @@ export default function Launcher() {
           />
         )}
       </article>
-      <article className="w-full mx-auto ">
-        <section className="flex flex-col gap-4 mb-6">
-          <SectionSubheading
-            title="Frontend Template"
-            description="Select the frontend template you want to use"
-          />
-
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <FrameworkCard
-              name={FRONTEND_TEMPLATES.WEBAPP}
-              description={
-                "A WebApp frontend for interacting with the JSON Store smart contract on the XION blockchain."
-              }
-              selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
-              templateUrl={
-                "https://github.com/burnt-labs/xion-user-map-json-store-frontend"
-              }
+      {addresses && (
+        <article className="w-full mx-auto ">
+          <section className="flex flex-col gap-4 mb-6">
+            <SectionSubheading
+              title="Frontend Template"
+              description="Select the frontend template you want to use"
             />
 
-            <FrameworkCard
-              name={FRONTEND_TEMPLATES.MOBILE}
-              description={
-                "A mobile frontend for interacting with the JSON Store smart contract on the XION blockchain."
-              }
-              selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
-              templateUrl={"https://github.com/burnt-labs/abstraxion-expo-demo"}
-            />
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-4 mb-6">
-          <SectionSubheading
-            title="Set Up Your Project"
-            description="You can choose one of the following methods to set up your project."
-          />
-          <SectionSubheading
-            title="Option 1: One-liner (Recommended)"
-            description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
-          />
-          <OneLiner
-            url={buildInstallUrl(window.location.origin, account?.bech32Address, frontendTemplate)}
-          />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <SectionSubheading
-            title="Option 2: Manual Environment Setup"
-            description="Already have the project cloned? Copy and paste the following into your .env.local file:"
-          />
-          <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
-            <div className="flex flex-col gap-2">
-              <textarea
-                readOnly
-                className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
-                rows={7}
-                value={textboxValue}
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <FrameworkCard
+                name={FRONTEND_TEMPLATES.WEBAPP}
+                description={
+                  "A WebApp frontend for interacting with the JSON Store smart contract on the XION blockchain."
+                }
+                selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
+                onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
+                templateUrl={
+                  "https://github.com/burnt-labs/xion-user-map-json-store-frontend"
+                }
               />
-              <div className="flex justify-end gap-2">
-                <CopyButton text={textboxValue} />
+
+              <FrameworkCard
+                name={FRONTEND_TEMPLATES.MOBILE}
+                description={
+                  "A mobile frontend for interacting with the JSON Store smart contract on the XION blockchain."
+                }
+                selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
+                onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
+                templateUrl={
+                  "https://github.com/burnt-labs/abstraxion-expo-demo"
+                }
+              />
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-4 mb-6">
+            <SectionSubheading
+              title="Set Up Your Project"
+              description="You can choose one of the following methods to set up your project."
+            />
+            <SectionSubheading
+              title="Option 1: One-liner (Recommended)"
+              description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
+            />
+            <OneLiner
+              url={buildInstallUrl(
+                window.location.origin,
+                account?.bech32Address,
+                frontendTemplate
+              )}
+            />
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <SectionSubheading
+              title="Option 2: Manual Environment Setup"
+              description="Already have the project cloned? Copy and paste the following into your .env.local file:"
+            />
+            <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
+              <div className="flex flex-col gap-2">
+                <textarea
+                  readOnly
+                  className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
+                  rows={7}
+                  value={textboxValue}
+                />
+                <div className="flex justify-end gap-2">
+                  <CopyButton text={textboxValue} />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      </article>
+          </section>
+        </article>
+      )}
     </div>
   );
 }

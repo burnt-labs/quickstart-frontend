@@ -94,9 +94,6 @@ export default function Launcher() {
       <article className="w-full mx-auto ">
         <header className="mb-4">
           <ArticleTitle>Quick Start</ArticleTitle>
-          <MutedText>
-            {client && account && `${account.bech32Address}`}
-          </MutedText>
         </header>
         {!addresses && (
           <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">

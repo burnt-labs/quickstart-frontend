@@ -5,7 +5,7 @@ import {
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { MutedText, ArticleTitle, SectionSubheading } from "./ui/Typography";
+import { ArticleTitle, SectionSubheading } from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
@@ -96,9 +96,6 @@ export default function Launcher() {
       <article className="w-full mx-auto ">
         <header className="mb-4">
           <ArticleTitle>Quick Start</ArticleTitle>
-          <MutedText>
-            {client && account && `${account.bech32Address}`}
-          </MutedText>
         </header>
         {!addresses && (
           <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">

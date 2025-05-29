@@ -11,6 +11,7 @@
     "deploy": "wrangler deploy",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:all": "turbo run build --cwd ../..",
     "lint": "eslint .",
     "preview": "vite preview"
   },

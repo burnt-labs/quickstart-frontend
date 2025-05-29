@@ -6,6 +6,7 @@ import {
 import xionLogo from "../assets/logo.png";
 import { BaseButton } from "./ui/BaseButton";
 import { NotLoggedIn } from "./NotLoggedIn";
+import Footer from "./Footer";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { client, logout } = useAbstraxionSigningClient();
@@ -46,7 +47,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           <main className="w-full h-screen flex flex-col items-center justify-center">
-            <NotLoggedIn />
+            <div className="flex flex-col justify-between gap-12">
+              <NotLoggedIn />
+              <Footer />
+            </div>
           </main>
         </>
       )}

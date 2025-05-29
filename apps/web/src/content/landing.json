@@ -1,0 +1,18 @@
+{
+  "title": "XION Dev Quick Start",
+  "tagline": "",
+  "action_cards": [
+    {
+      "title": "Learn About XION",
+      "description": "XION is the first blockchain purpose built to empower you to create consumer-ready applications.",
+      "link": "https://docs.burnt.com/xion",
+      "link_text": "Learn More"
+    },
+    {
+      "title": "Quick Start",
+      "description": "Jump straight into building on XION with ready-made dapp templates that require little to no setup.",
+      "link": "https://docs.burnt.com/xion/quick-start",
+      "link_text": "Log In"
+    }
+  ]
+}

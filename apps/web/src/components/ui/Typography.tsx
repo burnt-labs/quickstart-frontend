@@ -8,7 +8,7 @@ export function PageTitle({ children, className, ...props }: TitleProps) {
   return (
     <h1
       className={cn(
-        "text-4xl font-bold tracking-tight text-gray-100 sm:text-5xl",
+        "text-4xl font-bold tracking-tight mb-2 text-gray-100 sm:text-5xl",
         className
       )}
       {...props}
@@ -36,7 +36,7 @@ export function SubsectionTitle({ children, className, ...props }: TitleProps) {
   return (
     <h3
       className={cn(
-        "text-2xl font-semibold tracking-tight text-gray-100 sm:text-3xl",
+        "text-2xl font-semibold tracking-tight mb-2 text-gray-100 sm:text-3xl",
         className
       )}
       {...props}

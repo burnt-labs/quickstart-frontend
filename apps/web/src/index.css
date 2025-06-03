@@ -1,6 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 @import "tailwindcss";
+@tailwind utilities;
 
+@theme {
+  --color-testnet-bg: rgba(255, 170, 74, 0.2);
+  --color-testnet: rgb(255, 170, 74);
+  --color-secondary-text: #8d8d8d;
+}
 @layer base {
   :root {
     --font-dm-sans: "DM Sans", sans-serif;

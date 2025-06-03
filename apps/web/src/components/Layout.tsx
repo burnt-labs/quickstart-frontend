@@ -45,14 +45,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </main>
         </>
       ) : (
-        <>
-          <main className="w-full h-screen flex flex-col items-center justify-center">
-            <div className="flex flex-col justify-between gap-12">
-              <NotLoggedIn />
-              <Footer />
-            </div>
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1 flex flex-col items-center justify-center">
+            <NotLoggedIn />
           </main>
-        </>
+          <footer className="flex h-[100px] p-8">
+            <Footer />
+          </footer>
+        </div>
       )}
     </>
   );

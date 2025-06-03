@@ -24,11 +24,7 @@ const FooterLogin = () => {
         </p>
         <div className="flex flex-row-reverse items-center sm:items-start sm:flex-col">
           <div
-            className={`flex justify-between items-center h-[18px] ${
-              isMainnet ? "bg-mainnet-bg" : "bg-testnet-bg"
-            } px-1 py-0 ml-2 mt-1.5 sm:ml-0 sm:mb-2 ${
-              isMainnet ? "text-mainnet" : "text-testnet"
-            } rounded-[4px] text-[10px] tracking-widest`}
+            className={`flex justify-between items-center h-[18px] text-testnet bg-testnet-bg px-1 py-0 ml-2 mt-1.5 sm:ml-0 sm:mb-2 rounded-[4px] text-[10px] tracking-widest`}
           >
             {isMainnet ? "MAINNET" : "TESTNET"}
           </div>

@@ -38,9 +38,11 @@ export function NotLoggedIn() {
 
   return (
     <article className="flex flex-col items-center">
-      <PageTitle>{content.title}</PageTitle>
-      <SubsectionTitle className="mb-8">{content.tagline}</SubsectionTitle>
-      <div className="flex gap-4">
+      <PageTitle className="text-center mb-4">{content.title}</PageTitle>
+      <SubsectionTitle className="mb-8 text-center">
+        {content.tagline}
+      </SubsectionTitle>
+      <div className="flex flex-col gap-4 md:flex-row ">
         {content.action_cards.map((card, index) => (
           <ActionCard
             key={index}
@@ -52,15 +54,3 @@ export function NotLoggedIn() {
     </article>
   );
 }
-
-// <article className="w-full mx-auto flex flex-col max-w-screen-md">
-// <header className="mb-4">
-//   <h1>Welcome to XION Dev Quick Start</h1>
-//   <SubsectionTitle>Login to get started</SubsectionTitle>
-// </header>
-// <section className="w-full bg-white/5 rounded-lg p-8">
-//   <BaseButton className="w-full" onClick={handleLoginClick}>
-//     Login
-//   </BaseButton>
-// </section>
-// </article>

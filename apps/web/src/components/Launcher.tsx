@@ -24,6 +24,7 @@ import {
   EXISTING_CONTRACTS_QUERY_KEY,
 } from "../hooks/useExistingContracts";
 import { buildInstallUrl } from "../utils/url-util";
+import launcherContent from "../content/launcher.json";
 
 const RPC_URL =
   import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
@@ -38,7 +39,7 @@ export default function Launcher() {
     DEFAULT_FRONTEND_TEMPLATE
   );
   const [textboxValue, setTextboxValue] = useState(
-    "Once you've launched your contract, copy and paste the following into your .env file"
+    launcherContent.copypaste_box_default_text
   );
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
@@ -129,26 +130,18 @@ export default function Launcher() {
             <div className="flex flex-col md:flex-row gap-4 mb-4">
               <FrameworkCard
                 name={FRONTEND_TEMPLATES.WEBAPP}
-                description={
-                  "A WebApp frontend for interacting with the JSON Store smart contract on the XION blockchain."
-                }
+                description={launcherContent.webapp_description}
                 selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
                 onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
-                templateUrl={
-                  "https://github.com/burnt-labs/xion-user-map-json-store-frontend"
-                }
+                templateUrl={launcherContent.webapp_template_url}
               />
 
               <FrameworkCard
                 name={FRONTEND_TEMPLATES.MOBILE}
-                description={
-                  "A mobile frontend for interacting with the JSON Store smart contract on the XION blockchain."
-                }
+                description={launcherContent.mobile_description}
                 selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
                 onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
-                templateUrl={
-                  "https://github.com/burnt-labs/abstraxion-expo-demo"
-                }
+                templateUrl={launcherContent.mobile_template_url}
               />
             </div>
           </section>

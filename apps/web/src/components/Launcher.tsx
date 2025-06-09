@@ -4,6 +4,7 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
+import * as Tabs from "@radix-ui/react-tabs";
 import { BaseButton } from "./ui/BaseButton";
 import {
   ArticleTitle,
@@ -133,71 +134,97 @@ export default function Launcher() {
         </section>
       </article>
 
-      <article className="w-full mx-auto">
-        <header className="mb-4">
-          <ArticleTitle>{launcherContent.step_2_title}</ArticleTitle>
-          <MutedText>{launcherContent.step_2_description}</MutedText>
-        </header>
-        <section className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <FrameworkCard
-              name={FRONTEND_TEMPLATES.WEBAPP}
-              description={launcherContent.webapp_description}
-              selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
-              templateUrl={launcherContent.webapp_template_url}
-            />
+      {addresses && (
+        <>
+          <article className="w-full mx-auto">
+            <header className="mb-4">
+              <ArticleTitle>{launcherContent.step_2_title}</ArticleTitle>
+              <MutedText>{launcherContent.step_2_description}</MutedText>
+            </header>
+            <section className="flex flex-col gap-4 mb-6">
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <FrameworkCard
+                  name={FRONTEND_TEMPLATES.WEBAPP}
+                  description={launcherContent.webapp_description}
+                  selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
+                  onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
+                  templateUrl={launcherContent.webapp_template_url}
+                />
 
-            <FrameworkCard
-              name={FRONTEND_TEMPLATES.MOBILE}
-              description={launcherContent.mobile_description}
-              selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
-              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
-              templateUrl={launcherContent.mobile_template_url}
-            />
-          </div>
-        </section>
-      </article>
-
-      <article className="w-full mx-auto">
-        <header className="mb-4">
-          <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
-          <MutedText>{launcherContent.step_3_description}</MutedText>
-        </header>
-        <section className="flex flex-col gap-4 mb-6">
-          <SectionSubheading
-            title="Option 1: One-liner (Recommended)"
-            description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
-          />
-          <OneLiner
-            url={buildInstallUrl(
-              window.location.origin,
-              account?.bech32Address,
-              frontendTemplate
-            )}
-          />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <SectionSubheading
-            title="Option 2: Manual Environment Setup"
-            description="Already have the project cloned? Copy and paste the following into your .env.local file:"
-          />
-          <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
-            <div className="flex flex-col gap-2">
-              <textarea
-                readOnly
-                className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
-                rows={7}
-                value={textboxValue}
-              />
-              <div className="flex justify-end gap-2">
-                <CopyButton text={textboxValue} />
+                <FrameworkCard
+                  name={FRONTEND_TEMPLATES.MOBILE}
+                  description={launcherContent.mobile_description}
+                  selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
+                  onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
+                  templateUrl={launcherContent.mobile_template_url}
+                />
               </div>
-            </div>
-          </div>
-        </section>
-      </article>
+            </section>
+          </article>
+
+          <article className="w-full mx-auto">
+            <header className="mb-4">
+              <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
+              <MutedText>{launcherContent.step_3_description}</MutedText>
+            </header>
+
+            <Tabs.Root defaultValue="one-liner" className="w-full">
+              <Tabs.List className="flex border-b border-white/10 mb-6">
+                <Tabs.Trigger
+                  value="one-liner"
+                  className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white transition-colors"
+                >
+                  {launcherContent.tabs.one_liner.title}
+                </Tabs.Trigger>
+                <Tabs.Trigger
+                  value="manual"
+                  className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white transition-colors"
+                >
+                  {launcherContent.tabs.manual.title}
+                </Tabs.Trigger>
+              </Tabs.List>
+
+              <Tabs.Content value="one-liner" className="outline-none">
+                <section className="flex flex-col gap-4 mb-6">
+                  <SectionSubheading
+                    title={launcherContent.tabs.one_liner.subheading}
+                    description={launcherContent.tabs.one_liner.description}
+                  />
+                  <OneLiner
+                    url={buildInstallUrl(
+                      window.location.origin,
+                      account?.bech32Address,
+                      frontendTemplate
+                    )}
+                  />
+                </section>
+              </Tabs.Content>
+
+              <Tabs.Content value="manual" className="outline-none">
+                <section className="flex flex-col gap-4">
+                  <SectionSubheading
+                    title={launcherContent.tabs.manual.subheading}
+                    description={launcherContent.tabs.manual.description}
+                  />
+                  <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
+                    <div className="flex flex-col gap-2">
+                      <textarea
+                        readOnly
+                        className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
+                        rows={7}
+                        value={textboxValue}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <CopyButton text={textboxValue} />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </Tabs.Content>
+            </Tabs.Root>
+          </article>
+        </>
+      )}
     </div>
   );
 }

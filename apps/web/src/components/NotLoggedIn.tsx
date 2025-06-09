@@ -1,6 +1,6 @@
 import { useModal } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { PageTitle, SubsectionTitle } from "./ui/Typography";
+import { MutedText, PageTitle, SubsectionTitle } from "./ui/Typography";
 import content from "../content/landing.json";
 
 const ActionCard = ({
@@ -18,8 +18,10 @@ const ActionCard = ({
 }) => {
   return (
     <section className="flex flex-col gap-2 max-w-[375px] bg-white/5 rounded-lg p-8">
-      <SubsectionTitle>{title}</SubsectionTitle>
-      <p>{description}</p>
+      <header className="mb-4">
+        <SubsectionTitle>{title}</SubsectionTitle>
+        <p>{description}</p>
+      </header>
       <BaseButton
         onClick={onClick ? onClick : () => window.open(link, "_blank")}
       >
@@ -39,9 +41,9 @@ export function NotLoggedIn() {
   return (
     <article className="flex flex-col items-center">
       <PageTitle className="text-center mb-4">{content.title}</PageTitle>
-      <SubsectionTitle className="mb-8 text-center">
+      <MutedText className="mb-8 text-center text-xl">
         {content.tagline}
-      </SubsectionTitle>
+      </MutedText>
       <div className="flex flex-col gap-4 md:flex-row ">
         {content.action_cards.map((card, index) => (
           <ActionCard

@@ -8,7 +8,7 @@ export function PageTitle({ children, className, ...props }: TitleProps) {
   return (
     <h1
       className={cn(
-        "text-4xl font-bold tracking-tight mb-2 text-gray-100 sm:text-5xl",
+        "text-4xl font-bold tracking-tight mb-2 text-gray-100 sm:text-4xl",
         className
       )}
       {...props}
@@ -73,7 +73,7 @@ export function Subtitle({ children, className, ...props }: TitleProps) {
 
 export function MutedText({ children, className, ...props }: TitleProps) {
   return (
-    <p className={cn("text-gray-400 break-all", className)} {...props}>
+    <p className={cn("text-gray-400", className)} {...props}>
       {children}
     </p>
   );

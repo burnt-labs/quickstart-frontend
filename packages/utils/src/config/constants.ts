@@ -20,7 +20,7 @@ export const VERSIONS: Record<string, Version> = {
     },
   },
   "0.0.2": {
-    salt: "xion-rocks",
+    salt: "xion-rocks-2",
     checksums: {
       userMap:
         "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1",

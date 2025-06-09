@@ -5,7 +5,12 @@ import {
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
 import { BaseButton } from "./ui/BaseButton";
-import { ArticleTitle, SectionSubheading } from "./ui/Typography";
+import {
+  ArticleTitle,
+  MutedText,
+  PageTitle,
+  SectionSubheading,
+} from "./ui/Typography";
 import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import { SuccessMessage } from "./SuccessMessage";
 import { ErrorMessage } from "./ErrorMessage";
@@ -94,97 +99,105 @@ export default function Launcher() {
 
   return (
     <div className="flex flex-col w-full max-w-screen-md mx-auto">
-      <article className="w-full mx-auto ">
+      <header className="mb-4">
+        <PageTitle>{launcherContent.page_title}</PageTitle>
+        <MutedText>{launcherContent.page_description}</MutedText>
+      </header>
+
+      <article className="w-full mx-auto">
         <header className="mb-4">
-          <ArticleTitle>Quick Start</ArticleTitle>
+          <ArticleTitle>{launcherContent.step_1_title}</ArticleTitle>
+          <MutedText>{launcherContent.step_1_description}</MutedText>
         </header>
-        {!addresses && (
-          <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
-            <BaseButton
-              className="w-full"
-              onClick={handleLaunchClick}
-              disabled={isPending}
-            >
-              {isPending ? "Launching..." : "Launch User Map & Fund Treasury"}
-            </BaseButton>
-          </section>
-        )}
+        <section className="flex flex-col gap-4 bg-white/5 rounded-lg p-8 mb-8">
+          <BaseButton
+            className="w-full"
+            onClick={handleLaunchClick}
+            disabled={isPending || addresses}
+          >
+            {isPending
+              ? launcherContent.launch_button_text.launching
+              : addresses
+              ? launcherContent.launch_button_text.launched
+              : launcherContent.launch_button_text.default}
+          </BaseButton>
+        </section>
+        <section>
+          {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
+          {errorMessage && (
+            <ErrorMessage
+              errorMessage={errorMessage}
+              onClose={() => setErrorMessage("")}
+            />
+          )}
+        </section>
       </article>
-      <article className="w-full mx-auto ">
-        {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
-        {errorMessage && (
-          <ErrorMessage
-            errorMessage={errorMessage}
-            onClose={() => setErrorMessage("")}
+
+      <article className="w-full mx-auto">
+        <header className="mb-4">
+          <ArticleTitle>{launcherContent.step_2_title}</ArticleTitle>
+          <MutedText>{launcherContent.step_2_description}</MutedText>
+        </header>
+        <section className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <FrameworkCard
+              name={FRONTEND_TEMPLATES.WEBAPP}
+              description={launcherContent.webapp_description}
+              selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
+              templateUrl={launcherContent.webapp_template_url}
+            />
+
+            <FrameworkCard
+              name={FRONTEND_TEMPLATES.MOBILE}
+              description={launcherContent.mobile_description}
+              selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
+              onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
+              templateUrl={launcherContent.mobile_template_url}
+            />
+          </div>
+        </section>
+      </article>
+
+      <article className="w-full mx-auto">
+        <header className="mb-4">
+          <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
+          <MutedText>{launcherContent.step_3_description}</MutedText>
+        </header>
+        <section className="flex flex-col gap-4 mb-6">
+          <SectionSubheading
+            title="Option 1: One-liner (Recommended)"
+            description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
           />
-        )}
-      </article>
-      {addresses && (
-        <article className="w-full mx-auto ">
-          <section className="flex flex-col gap-4 mb-6">
-            <SectionSubheading
-              title="Frontend Template"
-              description="Select the frontend template you want to use"
-            />
+          <OneLiner
+            url={buildInstallUrl(
+              window.location.origin,
+              account?.bech32Address,
+              frontendTemplate
+            )}
+          />
+        </section>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-              <FrameworkCard
-                name={FRONTEND_TEMPLATES.WEBAPP}
-                description={launcherContent.webapp_description}
-                selected={FRONTEND_TEMPLATES.WEBAPP === frontendTemplate}
-                onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.WEBAPP)}
-                templateUrl={launcherContent.webapp_template_url}
+        <section className="flex flex-col gap-4">
+          <SectionSubheading
+            title="Option 2: Manual Environment Setup"
+            description="Already have the project cloned? Copy and paste the following into your .env.local file:"
+          />
+          <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
+            <div className="flex flex-col gap-2">
+              <textarea
+                readOnly
+                className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
+                rows={7}
+                value={textboxValue}
               />
-
-              <FrameworkCard
-                name={FRONTEND_TEMPLATES.MOBILE}
-                description={launcherContent.mobile_description}
-                selected={FRONTEND_TEMPLATES.MOBILE === frontendTemplate}
-                onClick={() => setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE)}
-                templateUrl={launcherContent.mobile_template_url}
-              />
-            </div>
-          </section>
-
-          <section className="flex flex-col gap-4 mb-6">
-            <SectionSubheading
-              title="Set Up Your Project"
-              description="You can choose one of the following methods to set up your project."
-            />
-            <SectionSubheading
-              title="Option 1: One-liner (Recommended)"
-              description="Run this in your terminal to automatically clone the repository, set up the environment, and install dependencies:"
-            />
-            <OneLiner
-              url={buildInstallUrl(
-                window.location.origin,
-                account?.bech32Address,
-                frontendTemplate
-              )}
-            />
-          </section>
-
-          <section className="flex flex-col gap-4">
-            <SectionSubheading
-              title="Option 2: Manual Environment Setup"
-              description="Already have the project cloned? Copy and paste the following into your .env.local file:"
-            />
-            <div className="flex flex-col gap-4 bg-white/5 rounded-lg p-4">
-              <div className="flex flex-col gap-2">
-                <textarea
-                  readOnly
-                  className="w-full p-4 bg-white/10 rounded-lg font-mono text-sm"
-                  rows={7}
-                  value={textboxValue}
-                />
-                <div className="flex justify-end gap-2">
-                  <CopyButton text={textboxValue} />
-                </div>
+              <div className="flex justify-end gap-2">
+                <CopyButton text={textboxValue} />
               </div>
             </div>
-          </section>
-        </article>
-      )}
+          </div>
+        </section>
+      </article>
     </div>
   );
 }

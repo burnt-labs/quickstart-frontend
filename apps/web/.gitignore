@@ -28,3 +28,4 @@ dist-ssr
 .dev.vars*
 .env*
 !.env.example
+!.env.testnet

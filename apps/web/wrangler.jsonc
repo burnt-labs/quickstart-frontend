@@ -6,7 +6,6 @@
     "directory": "./dist",
     "binding": "ASSETS"
   },
-
   "routes": [
     {
       "pattern": "quickstart.dev.testnet.burnt.com",

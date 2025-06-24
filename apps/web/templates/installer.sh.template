@@ -115,6 +115,18 @@ fi
 # Navigate to the repository
 cd "$REPO_NAME"
 
+# For RUM contracts, checkout the impl-reclaim branch
+if [ "$CONTRACT_TYPE" = "rum" ]; then
+  echo -e "\n${BLUE}Checking out impl-reclaim branch for RUM support...${NC}"
+  git checkout impl-reclaim
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to checkout impl-reclaim branch.${NC}"
+    echo -e "${YELLOW}This branch is required for RUM contract functionality.${NC}"
+    exit 1
+  fi
+  echo -e "${GREEN}✓ Successfully switched to impl-reclaim branch${NC}"
+fi
+
 # Create .env.local file
 echo -e "\n${BLUE}Creating .env.local file...${NC}"
 

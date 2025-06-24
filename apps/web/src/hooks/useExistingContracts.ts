@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchExistingContracts, verifyContractExists } from "@burnt-labs/quick-start-utils";
-import { predictRumAddress } from "../lib/rum";
-import { predictTreasuryAddress } from "../lib/treasury";
-import { INSTANTIATE_SALT } from "../config/constants";
+import { fetchExistingContracts } from "@burnt-labs/quick-start-utils";
 
 export const EXISTING_CONTRACTS_QUERY_KEY = "existing-contracts";
 
@@ -22,59 +19,53 @@ export interface ExistingContracts {
   nextRumIndex: number;
 }
 
-const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
 
-async function checkRumContracts(address: string): Promise<{ contracts: RumContract[], nextIndex: number }> {
-  const contracts: RumContract[] = [];
-  
-  // Check for RUM contract using the same salt as UserMap
-  const index = 0;
-  const rumAddress = predictRumAddress(address, INSTANTIATE_SALT);
-  const treasuryAddress = predictTreasuryAddress(address, INSTANTIATE_SALT);
-  
-  console.log(`Checking RUM contract at address:`, rumAddress);
-  console.log(`Using salt:`, INSTANTIATE_SALT);
-  
-  const rumExists = await verifyContractExists({
-    address: rumAddress,
-    restUrl: REST_URL,
-  });
-  
-  console.log(`RUM contract exists:`, rumExists);
-  
-  if (rumExists) {
-    contracts.push({
-      appAddress: rumAddress,
-      treasuryAddress,
-      index,
-    });
-  }
-  
-  // Next index is always 0 if no contract exists, or 1 if contract exists
-  const nextIndex = rumExists ? 1 : 0;
-  
-  console.log(`Found ${contracts.length} RUM contracts, next index: ${nextIndex}`);
-  return { contracts, nextIndex };
-}
 
 export const useExistingContracts = (address: string) => {
   return useQuery({
     queryKey: [EXISTING_CONTRACTS_QUERY_KEY, address],
     queryFn: async () => {
-      // Check for standard user map contracts
-      const userMapContracts = await fetchExistingContracts({
+      // Fetch all existing contracts in one call
+      const existingContracts = await fetchExistingContracts({
         address,
         baseUrl: window.location.origin,
       });
       
-      // Check for RUM contracts
-      const { contracts: rumContracts, nextIndex } = await checkRumContracts(address);
+      if (!existingContracts) {
+        return {
+          userMap: undefined,
+          rumContracts: [],
+          nextRumIndex: 0,
+        } as ExistingContracts;
+      }
       
-      return {
-        userMap: userMapContracts,
-        rumContracts,
-        nextRumIndex: nextIndex,
-      } as ExistingContracts;
+      // Parse the response
+      const result: ExistingContracts = {
+        userMap: undefined,
+        rumContracts: [],
+        nextRumIndex: 0,
+      };
+      
+      // If we have UserMap and treasury addresses, set userMap
+      if (existingContracts.appAddress && existingContracts.treasuryAddress) {
+        result.userMap = {
+          appAddress: existingContracts.appAddress,
+          treasuryAddress: existingContracts.treasuryAddress,
+        };
+      }
+      
+      // If we have RUM address, add it to rumContracts
+      if (existingContracts.rumAddress) {
+        result.rumContracts.push({
+          appAddress: existingContracts.rumAddress,
+          treasuryAddress: existingContracts.treasuryAddress,
+          index: 0,
+          claimKey: "followers_count",
+        });
+        result.nextRumIndex = 1;
+      }
+      
+      return result;
     },
     enabled: !!address,
     refetchOnWindowFocus: false,

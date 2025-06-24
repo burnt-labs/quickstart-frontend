@@ -157,49 +157,53 @@ export default {
 
     const config = mergeConfigWithDefaults(params);
 
-    let appAddress: string;
-    let treasuryAddress: string;
+    // Always predict both contract addresses
+    const saltEncoded = new TextEncoder().encode(config.salt);
+    
+    const userMapAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.app_checksum,
+      salt: saltEncoded,
+    });
 
-    if (params.contract_type === "rum") {
-      // For RUM contracts, use the same salt as UserMap
-      appAddress = predictRumAddress(params.user_address, config.salt);
-      
-      // Treasury address remains the same
-      const saltEncoded = new TextEncoder().encode(config.salt);
-      treasuryAddress = predictInstantiate2Address({
-        senderAddress: params.user_address,
-        checksum: config.treasury_checksum,
-        salt: saltEncoded,
-      });
-    } else {
-      // Default User Map contract address prediction
-      const saltEncoded = new TextEncoder().encode(config.salt);
+    const rumAddress = predictRumAddress(params.user_address, config.salt);
 
-      appAddress = predictInstantiate2Address({
-        senderAddress: params.user_address,
-        checksum: config.app_checksum,
-        salt: saltEncoded,
-      });
+    const treasuryAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.treasury_checksum,
+      salt: saltEncoded,
+    });
 
-      treasuryAddress = predictInstantiate2Address({
-        senderAddress: params.user_address,
-        checksum: config.treasury_checksum,
-        salt: saltEncoded,
-      });
-    }
+    // For backward compatibility, set appAddress based on contract_type
+    const appAddress = params.contract_type === "rum" ? rumAddress : userMapAddress;
 
     // Skip verification if verify=false in the query parameters
+    let userMapExists = false;
+    let rumExists = false;
+    let treasuryExists = false;
+    
     if (config.verify) {
-      const appExists = await verifyContractExists({
-        address: appAddress,
+      // Check UserMap contract
+      userMapExists = await verifyContractExists({
+        address: userMapAddress,
         restUrl: REST_URL,
       });
 
-      const treasuryExists = await verifyContractExists({
+      // Check RUM contract
+      rumExists = await verifyContractExists({
+        address: rumAddress,
+        restUrl: REST_URL,
+      });
+
+      // Check treasury contract
+      treasuryExists = await verifyContractExists({
         address: treasuryAddress,
         restUrl: REST_URL,
       });
 
+      // For backward compatibility, check based on contract_type
+      const appExists = params.contract_type === "rum" ? rumExists : userMapExists;
+      
       if (!appExists || !treasuryExists) {
         return new Response("Contract does not exist", { status: 400 });
       }
@@ -237,7 +241,24 @@ export default {
       }
 
       if (config.values_only) {
-        return Response.json({ appAddress, treasuryAddress });
+        // Return all contract addresses if they exist
+        const response: any = {};
+        
+        if (!config.verify || (userMapExists && treasuryExists)) {
+          response.appAddress = userMapAddress;
+          response.treasuryAddress = treasuryAddress;
+        }
+        
+        if (!config.verify || rumExists) {
+          response.rumAddress = rumAddress;
+        }
+        
+        // Return null if no contracts exist
+        if (Object.keys(response).length === 0) {
+          return Response.json(null);
+        }
+        
+        return Response.json(response);
       }
 
       const headers: Record<string, string> = {

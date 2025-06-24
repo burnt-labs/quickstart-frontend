@@ -145,7 +145,7 @@ export default function Launcher() {
         client,
         contractType,
         claimKey: contractType === "rum" ? claimKey : undefined,
-        rumIndex: contractType === "rum" ? existingContracts?.nextRumIndex : undefined,
+        rumIndex: contractType === "rum" ? 0 : undefined,
       });
     } catch (error) {
       console.error("Transaction failed:", error);
@@ -190,7 +190,6 @@ export default function Launcher() {
             textboxValue={textboxValue}
             account={account}
             contractType={contractType}
-            rumIndex={contractType === "rum" ? (justDeployedAddresses ? (existingContracts?.nextRumIndex ?? 1) - 1 : existingContracts?.rumContracts?.[existingContracts.rumContracts.length - 1]?.index) : undefined}
           />
         </>
       )}

@@ -11,7 +11,6 @@ interface InstallationSectionProps {
   textboxValue: string;
   account: { bech32Address: string } | undefined;
   contractType?: "usermap" | "rum";
-  rumIndex?: number;
 }
 
 export function InstallationSection({
@@ -19,7 +18,6 @@ export function InstallationSection({
   textboxValue,
   account,
   contractType,
-  rumIndex,
 }: InstallationSectionProps) {
   return (
     <article className="w-full mx-auto">
@@ -55,8 +53,7 @@ export function InstallationSection({
                 window.location.origin,
                 account?.bech32Address,
                 frontendTemplate,
-                contractType,
-                rumIndex
+                contractType
               )}
             />
           </section>

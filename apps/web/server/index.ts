@@ -112,7 +112,6 @@ export default {
       const template =
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
       const contractType = url.searchParams.get("contract_type") || "usermap";
-      const rumIndex = url.searchParams.get("rum_index") || "";
       
 
       // Set repository URL based on template (RUM always uses mobile)
@@ -137,8 +136,7 @@ export default {
         .replace(/{{template}}/g, contractType === "rum" ? "mobile" : template)
         .replace(/{{serverUrl}}/g, serverUrl)
         .replace(/{{userAddress}}/g, userAddress)
-        .replace(/{{contractType}}/g, contractType)
-        .replace(/{{rumIndex}}/g, rumIndex);
+        .replace(/{{contractType}}/g, contractType);
 
       return new Response(templateContent, {
         headers: {
@@ -159,9 +157,9 @@ export default {
     let appAddress: string;
     let treasuryAddress: string;
 
-    if (params.contract_type === "rum" && params.rum_index !== undefined) {
-      // For RUM contracts, use the RUM-specific prediction
-      const rumIndex = parseInt(params.rum_index, 10);
+    if (params.contract_type === "rum") {
+      // For RUM contracts, use the RUM-specific prediction (always index 0)
+      const rumIndex = params.rum_index !== undefined ? parseInt(params.rum_index, 10) : 0;
       appAddress = predictRumAddressByIndex(params.user_address, rumIndex);
       
       // Treasury address remains the same

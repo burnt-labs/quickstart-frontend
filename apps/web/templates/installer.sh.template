@@ -34,7 +34,6 @@ USER_ADDRESS="{{userAddress}}"
 
 # Contract type configuration
 CONTRACT_TYPE="{{contractType}}"
-RUM_INDEX="{{rumIndex}}"
 
 
 # Ask for user address if not provided
@@ -142,10 +141,6 @@ if command_exists curl; then
   
   if [ -n "$CONTRACT_TYPE" ]; then
     ENV_URL="${ENV_URL}&contract_type=${CONTRACT_TYPE}"
-  fi
-  
-  if [ -n "$RUM_INDEX" ] && [ "$RUM_INDEX" != "undefined" ]; then
-    ENV_URL="${ENV_URL}&rum_index=${RUM_INDEX}"
   fi
 
   ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)

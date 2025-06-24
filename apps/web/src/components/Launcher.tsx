@@ -59,8 +59,6 @@ export default function Launcher() {
         : undefined)
     : existingContracts?.userMap);
   
-  // For displaying env vars, show any deployed contracts
-  const hasAnyDeployedContracts = existingContracts?.userMap || (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0);
 
   useEffect(() => {
     // Show env vars for deployed contracts even if viewing different contract type
@@ -209,6 +207,9 @@ export default function Launcher() {
                 frontendTemplate={frontendTemplate}
                 textboxValue={textboxValue}
                 account={account}
+                contractType={contractType}
+                rumIndex={contractType === "rum" ? (justDeployedAddresses ? (existingContracts?.nextRumIndex ?? 1) - 1 : existingContracts?.rumContracts?.[existingContracts.rumContracts.length - 1]?.index) : undefined}
+                reclaimCredentials={contractType === "rum" ? { appId: reclaimCredentials.appId, providerId: reclaimCredentials.providerId } : undefined}
               />
               
               {contractType === "rum" && (

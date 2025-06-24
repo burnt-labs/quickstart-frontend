@@ -11,6 +11,8 @@ import {
   verifyContractExists,
 } from "@burnt-labs/quick-start-utils";
 import installerTemplate from "../templates/installer.sh.template?raw";
+import { formatEnvTextWithRum } from "../src/utils/formatEnvText";
+import { predictRumAddressByIndex } from "../src/lib/rum";
 
 const REST_URL = import.meta.env.VITE_REST_URL;
 
@@ -37,6 +39,10 @@ interface RequestParams {
   template?: FrontendTemplate;
   verify?: boolean;
   values_only?: boolean;
+  contract_type?: "usermap" | "rum";
+  rum_index?: string;
+  app_id?: string;
+  provider_id?: string;
 }
 
 const defaultConfig: Config = {
@@ -78,6 +84,10 @@ function getConfigFromParams(params: URLSearchParams): RequestParams {
     values_only: params.has("values_only")
       ? params.get("values_only") === "true"
       : undefined,
+    contract_type: params.get("contract_type") as "usermap" | "rum" | undefined,
+    rum_index: params.get("rum_index") || undefined,
+    app_id: params.get("app_id") || undefined,
+    provider_id: params.get("provider_id") || undefined,
   };
 }
 
@@ -105,15 +115,20 @@ export default {
       const userAddress = url.searchParams.get("user_address") || "";
       const template =
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
+      const contractType = url.searchParams.get("contract_type") || "usermap";
+      const rumIndex = url.searchParams.get("rum_index") || "";
+      const appId = url.searchParams.get("app_id") || "";
+      const providerId = url.searchParams.get("provider_id") || "";
+      
 
-      // Set repository URL based on template
+      // Set repository URL based on template (RUM always uses mobile)
       const repoUrl =
-        template === FRONTEND_TEMPLATES.MOBILE
+        template === FRONTEND_TEMPLATES.MOBILE || contractType === "rum"
           ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
           : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
 
       const repoName =
-        template === FRONTEND_TEMPLATES.MOBILE
+        template === FRONTEND_TEMPLATES.MOBILE || contractType === "rum"
           ? "xion-mobile-quickstart"
           : "xion-web-quickstart";
 
@@ -125,9 +140,13 @@ export default {
       templateContent = templateContent
         .replace(/{{repoUrl}}/g, repoUrl)
         .replace(/{{repoName}}/g, repoName)
-        .replace(/{{template}}/g, template)
+        .replace(/{{template}}/g, contractType === "rum" ? "mobile" : template)
         .replace(/{{serverUrl}}/g, serverUrl)
-        .replace(/{{userAddress}}/g, userAddress);
+        .replace(/{{userAddress}}/g, userAddress)
+        .replace(/{{contractType}}/g, contractType)
+        .replace(/{{rumIndex}}/g, rumIndex)
+        .replace(/{{appId}}/g, appId)
+        .replace(/{{providerId}}/g, providerId);
 
       return new Response(templateContent, {
         headers: {
@@ -145,19 +164,37 @@ export default {
 
     const config = mergeConfigWithDefaults(params);
 
-    const saltEncoded = new TextEncoder().encode(config.salt);
+    let appAddress: string;
+    let treasuryAddress: string;
 
-    const appAddress = predictInstantiate2Address({
-      senderAddress: params.user_address,
-      checksum: config.app_checksum,
-      salt: saltEncoded,
-    });
+    if (params.contract_type === "rum" && params.rum_index !== undefined) {
+      // For RUM contracts, use the RUM-specific prediction
+      const rumIndex = parseInt(params.rum_index, 10);
+      appAddress = predictRumAddressByIndex(params.user_address, rumIndex);
+      
+      // Treasury address remains the same
+      const saltEncoded = new TextEncoder().encode(config.salt);
+      treasuryAddress = predictInstantiate2Address({
+        senderAddress: params.user_address,
+        checksum: config.treasury_checksum,
+        salt: saltEncoded,
+      });
+    } else {
+      // Default User Map contract address prediction
+      const saltEncoded = new TextEncoder().encode(config.salt);
 
-    const treasuryAddress = predictInstantiate2Address({
-      senderAddress: params.user_address,
-      checksum: config.treasury_checksum,
-      salt: saltEncoded,
-    });
+      appAddress = predictInstantiate2Address({
+        senderAddress: params.user_address,
+        checksum: config.app_checksum,
+        salt: saltEncoded,
+      });
+
+      treasuryAddress = predictInstantiate2Address({
+        senderAddress: params.user_address,
+        checksum: config.treasury_checksum,
+        salt: saltEncoded,
+      });
+    }
 
     // Skip verification if verify=false in the query parameters
     if (config.verify) {
@@ -177,16 +214,42 @@ export default {
     }
 
     if (url.pathname.startsWith("/env/")) {
-      const envText = formatEnvText(
-        {
-          appAddress,
-          treasuryAddress,
-        },
-        config.template,
-        import.meta.env.VITE_RPC_URL ||
-          "https://rpc.xion-testnet-2.burnt.com:443",
-        import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com"
-      );
+      let envText: string;
+      
+      
+      if (params.contract_type === "rum") {
+        // Use RUM-specific formatting
+        const reclaimCredentials = {
+          appId: params.app_id || "your-reclaim-app-id",
+          appSecret: "",  // Never included in download
+          providerId: params.provider_id || "your-reclaim-provider-id",
+        };
+        
+        envText = formatEnvTextWithRum(
+          {
+            appAddress,
+            treasuryAddress,
+          },
+          config.template,
+          import.meta.env.VITE_RPC_URL ||
+            "https://rpc.xion-testnet-2.burnt.com:443",
+          import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com",
+          "rum",
+          reclaimCredentials
+        );
+      } else {
+        // Use regular User Map formatting
+        envText = formatEnvText(
+          {
+            appAddress,
+            treasuryAddress,
+          },
+          config.template,
+          import.meta.env.VITE_RPC_URL ||
+            "https://rpc.xion-testnet-2.burnt.com:443",
+          import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com"
+        );
+      }
 
       if (config.values_only) {
         return Response.json({ appAddress, treasuryAddress });

@@ -1,5 +1,4 @@
 import { ArticleTitle, MutedText } from "./ui/Typography";
-import { BaseButton } from "./ui/BaseButton";
 
 import { type RumContract } from "../hooks/useExistingContracts";
 

@@ -10,12 +10,18 @@ interface InstallationSectionProps {
   frontendTemplate: FrontendTemplate;
   textboxValue: string;
   account: { bech32Address: string } | undefined;
+  contractType?: "usermap" | "rum";
+  rumIndex?: number;
+  reclaimCredentials?: { appId: string; providerId: string };
 }
 
 export function InstallationSection({
   frontendTemplate,
   textboxValue,
   account,
+  contractType,
+  rumIndex,
+  reclaimCredentials,
 }: InstallationSectionProps) {
   return (
     <article className="w-full mx-auto">
@@ -50,7 +56,11 @@ export function InstallationSection({
               url={buildInstallUrl(
                 window.location.origin,
                 account?.bech32Address,
-                frontendTemplate
+                frontendTemplate,
+                contractType,
+                rumIndex,
+                reclaimCredentials?.appId,
+                reclaimCredentials?.providerId
               )}
             />
           </section>

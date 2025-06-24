@@ -10,8 +10,7 @@ import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export function predictTreasuryAddress(
   senderAddress: string,
-  saltString: string,
-  contractType: "usermap" | "rum" = "usermap"
+  saltString: string
 ) {
   const salt = new TextEncoder().encode(saltString);
 

@@ -15,7 +15,9 @@ REPO_NAME="{{repoName}}"
 echo -e "${BLUE}"
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║                                                            ║"
-if [ "{{template}}" = "mobile" ]; then
+if [ "$CONTRACT_TYPE" = "rum" ]; then
+  echo "║         XION RUM Mobile App Installer                      ║"
+elif [ "{{template}}" = "mobile" ]; then
   echo "║             XION Mobile App Installer                      ║"
 else
   echo "║             XION User Map Web App Installer                ║"
@@ -29,6 +31,14 @@ SERVER_URL="{{serverUrl}}"
 
 # Set user address from URL parameter if provided
 USER_ADDRESS="{{userAddress}}"
+
+# Contract type configuration
+CONTRACT_TYPE="{{contractType}}"
+RUM_INDEX="{{rumIndex}}"
+
+# Reclaim credentials (if provided)
+APP_ID="{{appId}}"
+PROVIDER_ID="{{providerId}}"
 
 # Ask for user address if not provided
 if [ -z "$USER_ADDRESS" ]; then
@@ -113,11 +123,33 @@ echo -e "\n${BLUE}Creating .env.local file...${NC}"
 
 # Get user address from the wallet
 if command_exists curl; then
+  
   # Try to fetch environment values from the server
   ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
 
   if [ -n "$USER_ADDRESS" ]; then
     ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
+  fi
+  
+  if [ -n "$CONTRACT_TYPE" ]; then
+    ENV_URL="${ENV_URL}&contract_type=${CONTRACT_TYPE}"
+  fi
+  
+  if [ -n "$RUM_INDEX" ] && [ "$RUM_INDEX" != "undefined" ]; then
+    ENV_URL="${ENV_URL}&rum_index=${RUM_INDEX}"
+  fi
+  
+  if [ -n "$APP_ID" ] && [ "$APP_ID" != "undefined" ] && [ "$APP_ID" != "" ]; then
+    ENV_URL="${ENV_URL}&app_id=${APP_ID}"
+  fi
+  
+  if [ -n "$PROVIDER_ID" ] && [ "$PROVIDER_ID" != "undefined" ] && [ "$PROVIDER_ID" != "" ]; then
+    ENV_URL="${ENV_URL}&provider_id=${PROVIDER_ID}"
+  fi
+  
+  # Debug output for RUM contracts
+  if [ "$CONTRACT_TYPE" = "rum" ]; then
+    echo -e "${BLUE}Fetching environment with URL: ${ENV_URL}${NC}"
   fi
 
   ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)
@@ -149,6 +181,22 @@ fi
 
 echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
 
+# Check if this is a RUM contract without credentials
+if [ "$CONTRACT_TYPE" = "rum" ]; then
+  # Check if the env file has placeholder Reclaim values
+  if grep -q "your-reclaim-app-id" .env.local; then
+    echo -e "\n${YELLOW}⚠️  Reclaim credentials not configured${NC}"
+    echo -e "${BLUE}To complete your RUM setup, you need to:${NC}"
+    echo -e "  1. Create an account at https://dev.reclaimprotocol.org"
+    echo -e "  2. Create a new application and get your App ID and App Secret"
+    echo -e "  3. Add a 'Twitter User Profile' provider and get the Provider ID"
+    echo -e "  4. Update the following values in your .env.local file:"
+    echo -e "     • EXPO_PUBLIC_RECLAIM_APP_ID"
+    echo -e "     • EXPO_PUBLIC_RECLAIM_APP_SECRET"
+    echo -e "     • EXPO_PUBLIC_RECLAIM_PROVIDER_ID"
+  fi
+fi
+
 # Success message
 echo -e "\n${GREEN}✅ Setup completed successfully!${NC}"
 
@@ -173,3 +221,34 @@ fi
 # Note about contract addresses
 echo -e "\n${BLUE}Note: Your .env.local file has been populated with contract addresses.${NC}"
 echo -e "${BLUE}If you need to use different contract addresses, you can edit the .env.local file.${NC}"
+
+# Special instructions for RUM contracts
+if [ "$CONTRACT_TYPE" = "rum" ]; then
+  echo -e "\n${YELLOW}⚠️  Important: Reclaim App Secret Required${NC}"
+  echo -e "${BLUE}You need to manually add your Reclaim App Secret to the .env.local file:${NC}"
+  echo -e "${GREEN}EXPO_PUBLIC_RECLAIM_APP_SECRET=\"your-actual-secret-here\"${NC}"
+  echo -e "\n${BLUE}Security reminder:${NC}"
+  echo -e "  • Never commit the .env.local file to version control"
+  echo -e "  • Add .env.local to your .gitignore file"
+  echo -e "  • Keep your secret secure and rotate it regularly"
+  
+  # Optionally prompt for the secret
+  echo -e "\n${BLUE}Would you like to add your Reclaim App Secret now? (y/n):${NC}"
+  read -p "" -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Please enter your Reclaim App Secret:${NC}"
+    read -s RECLAIM_SECRET
+    
+    if [ -n "$RECLAIM_SECRET" ]; then
+      # Update the .env.local file with the secret
+      sed -i.bak 's/EXPO_PUBLIC_RECLAIM_APP_SECRET="your-secret-here"/EXPO_PUBLIC_RECLAIM_APP_SECRET="'"$RECLAIM_SECRET"'"/' .env.local
+      rm .env.local.bak
+      echo -e "${GREEN}✓ Reclaim App Secret has been added to .env.local${NC}"
+    else
+      echo -e "${YELLOW}No secret entered. You'll need to add it manually later.${NC}"
+    fi
+  else
+    echo -e "${YELLOW}You'll need to add your Reclaim App Secret manually to .env.local${NC}"
+  fi
+fi

@@ -1,25 +1,19 @@
 import { ArticleTitle, MutedText } from "./ui/Typography";
 
-import { type RumContract } from "../hooks/useExistingContracts";
-
 export type ContractType = "usermap" | "rum";
 
 interface ContractTypeSectionProps {
   contractType: ContractType;
   onContractTypeChange: (type: ContractType) => void;
-  claimKey: string;
-  onClaimKeyChange: (key: string) => void;
   disabled?: boolean;
-  existingRumContracts?: RumContract[];
+  hasLaunchedContract?: boolean;
 }
 
 export function ContractTypeSection({
   contractType,
   onContractTypeChange,
-  claimKey,
-  onClaimKeyChange,
   disabled = false,
-  existingRumContracts = [],
+  hasLaunchedContract = false,
 }: ContractTypeSectionProps) {
   return (
     <article className="w-full mx-auto mb-8">
@@ -58,37 +52,13 @@ export function ContractTypeSection({
           >
             <h3 className="font-semibold mb-2">
               Reclaim User Map (RUM)
-              {existingRumContracts.length > 0 && (
-                <span className="ml-2 text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
-                  {existingRumContracts.length} deployed
-                </span>
-              )}
             </h3>
             <p className="text-sm text-gray-400">
-              zkTLS-enabled contract with proof verification
+              zkTLS-enabled contract for Twitter follower count verification
             </p>
           </button>
         </div>
         
-        {contractType === "rum" && (
-          <div className="mt-4">
-            <label htmlFor="claim-key" className="block text-sm font-medium mb-2">
-              Claim Key <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="claim-key"
-              type="text"
-              value={claimKey}
-              onChange={(e) => onClaimKeyChange(e.target.value)}
-              disabled={disabled}
-              placeholder="Enter the claim key from proof's claimData.context"
-              className="w-full px-4 py-2 bg-white/5 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              This value from the proof's claimData.context will be stored on-chain
-            </p>
-          </div>
-        )}
       </section>
     </article>
   );

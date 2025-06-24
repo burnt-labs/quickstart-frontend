@@ -22,8 +22,6 @@ import { LaunchSection } from "./LaunchSection";
 import { FrameworkSelectionSection } from "./FrameworkSelectionSection";
 import { InstallationSection } from "./InstallationSection";
 import { ContractTypeSection, type ContractType } from "./ContractTypeSection";
-import { ReclaimCredentialsSection, type ReclaimCredentials } from "./ReclaimCredentialsSection";
-import { AddSecretSection } from "./AddSecretSection";
 
 const RPC_URL =
   import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
@@ -41,12 +39,7 @@ export default function Launcher() {
     launcherContent.copypaste_box_default_text
   );
   const [contractType, setContractType] = useState<ContractType>("usermap");
-  const [claimKey, setClaimKey] = useState("");
-  const [reclaimCredentials, setReclaimCredentials] = useState<ReclaimCredentials>({
-    appId: "",
-    appSecret: "",
-    providerId: "",
-  });
+  const claimKey = "followers_count"; // Hardcoded for Twitter follower count verification
   const [justDeployedAddresses, setJustDeployedAddresses] = useState<{appAddress: string; treasuryAddress: string} | null>(null);
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
@@ -68,10 +61,10 @@ export default function Launcher() {
         : undefined);
     if (displayAddresses) {
       setTextboxValue(
-        formatEnvTextWithRum(displayAddresses, frontendTemplate, RPC_URL, REST_URL, contractType, reclaimCredentials)
+        formatEnvTextWithRum(displayAddresses, frontendTemplate, RPC_URL, REST_URL, contractType)
       );
     }
-  }, [addresses, existingContracts, frontendTemplate, contractType, reclaimCredentials]);
+  }, [addresses, existingContracts, frontendTemplate, contractType]);
   
   useEffect(() => {
     // Automatically switch to mobile template when RUM is selected
@@ -116,7 +109,7 @@ export default function Launcher() {
         queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
       });
       setTextboxValue(
-        formatEnvTextWithRum(newAddresses, frontendTemplate, RPC_URL, REST_URL, contractType, reclaimCredentials)
+        formatEnvTextWithRum(newAddresses, frontendTemplate, RPC_URL, REST_URL, contractType)
       );
       setTransactionHash(data.tx.transactionHash);
       setJustDeployedAddresses(newAddresses);
@@ -139,10 +132,6 @@ export default function Launcher() {
   const handleLaunchClick = async () => {
     if (!client || !account) return;
 
-    if (contractType === "rum" && !claimKey.trim()) {
-      setErrorMessage("Claim key is required for RUM contract deployment");
-      return;
-    }
 
     try {
       await launchTransaction({
@@ -168,10 +157,8 @@ export default function Launcher() {
       <ContractTypeSection
         contractType={contractType}
         onContractTypeChange={setContractType}
-        claimKey={claimKey}
-        onClaimKeyChange={setClaimKey}
         disabled={false}
-        existingRumContracts={existingContracts?.rumContracts}
+        hasLaunchedContract={!!addresses}
       />
 
       <LaunchSection
@@ -193,30 +180,13 @@ export default function Launcher() {
             contractType={contractType}
           />
 
-          {contractType === "rum" && (
-            <ReclaimCredentialsSection
-              credentials={reclaimCredentials}
-              onCredentialsChange={setReclaimCredentials}
-            />
-          )}
-
-          {((contractType === "usermap") || 
-            (contractType === "rum" && reclaimCredentials.appId && reclaimCredentials.providerId)) && (
-            <>
-              <InstallationSection
-                frontendTemplate={frontendTemplate}
-                textboxValue={textboxValue}
-                account={account}
-                contractType={contractType}
-                rumIndex={contractType === "rum" ? (justDeployedAddresses ? (existingContracts?.nextRumIndex ?? 1) - 1 : existingContracts?.rumContracts?.[existingContracts.rumContracts.length - 1]?.index) : undefined}
-                reclaimCredentials={contractType === "rum" ? { appId: reclaimCredentials.appId, providerId: reclaimCredentials.providerId } : undefined}
-              />
-              
-              {contractType === "rum" && (
-                <AddSecretSection />
-              )}
-            </>
-          )}
+          <InstallationSection
+            frontendTemplate={frontendTemplate}
+            textboxValue={textboxValue}
+            account={account}
+            contractType={contractType}
+            rumIndex={contractType === "rum" ? (justDeployedAddresses ? (existingContracts?.nextRumIndex ?? 1) - 1 : existingContracts?.rumContracts?.[existingContracts.rumContracts.length - 1]?.index) : undefined}
+          />
         </>
       )}
     </div>

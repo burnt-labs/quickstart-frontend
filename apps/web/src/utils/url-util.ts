@@ -10,8 +10,6 @@
  * @param template - The frontend template to use
  * @param contractType - The type of contract (usermap or rum)
  * @param rumIndex - The RUM contract index for RUM contracts
- * @param appId - The Reclaim App ID for RUM contracts
- * @param providerId - The Reclaim Provider ID for RUM contracts
  * @returns A properly formatted installation URL
  */
 export function buildInstallUrl(
@@ -19,9 +17,7 @@ export function buildInstallUrl(
   userAddress?: string,
   template?: string,
   contractType?: "usermap" | "rum",
-  rumIndex?: number,
-  appId?: string,
-  providerId?: string
+  rumIndex?: number
 ): string {
   // Create a URL object with the path and origin
   const url = new URL(`/install/`, origin);
@@ -41,14 +37,6 @@ export function buildInstallUrl(
 
   if (rumIndex !== undefined && contractType === 'rum') {
     url.searchParams.append('rum_index', rumIndex.toString());
-  }
-
-  if (contractType === 'rum' && appId && appId.trim() !== '') {
-    url.searchParams.append('app_id', appId);
-  }
-
-  if (contractType === 'rum' && providerId && providerId.trim() !== '') {
-    url.searchParams.append('provider_id', providerId);
   }
 
   // Return the URL as a string

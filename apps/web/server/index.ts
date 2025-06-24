@@ -41,8 +41,6 @@ interface RequestParams {
   values_only?: boolean;
   contract_type?: "usermap" | "rum";
   rum_index?: string;
-  app_id?: string;
-  provider_id?: string;
 }
 
 const defaultConfig: Config = {
@@ -86,8 +84,6 @@ function getConfigFromParams(params: URLSearchParams): RequestParams {
       : undefined,
     contract_type: params.get("contract_type") as "usermap" | "rum" | undefined,
     rum_index: params.get("rum_index") || undefined,
-    app_id: params.get("app_id") || undefined,
-    provider_id: params.get("provider_id") || undefined,
   };
 }
 
@@ -117,8 +113,6 @@ export default {
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
       const contractType = url.searchParams.get("contract_type") || "usermap";
       const rumIndex = url.searchParams.get("rum_index") || "";
-      const appId = url.searchParams.get("app_id") || "";
-      const providerId = url.searchParams.get("provider_id") || "";
       
 
       // Set repository URL based on template (RUM always uses mobile)
@@ -144,9 +138,7 @@ export default {
         .replace(/{{serverUrl}}/g, serverUrl)
         .replace(/{{userAddress}}/g, userAddress)
         .replace(/{{contractType}}/g, contractType)
-        .replace(/{{rumIndex}}/g, rumIndex)
-        .replace(/{{appId}}/g, appId)
-        .replace(/{{providerId}}/g, providerId);
+        .replace(/{{rumIndex}}/g, rumIndex);
 
       return new Response(templateContent, {
         headers: {
@@ -219,12 +211,6 @@ export default {
       
       if (params.contract_type === "rum") {
         // Use RUM-specific formatting
-        const reclaimCredentials = {
-          appId: params.app_id || "your-reclaim-app-id",
-          appSecret: "",  // Never included in download
-          providerId: params.provider_id || "your-reclaim-provider-id",
-        };
-        
         envText = formatEnvTextWithRum(
           {
             appAddress,
@@ -234,8 +220,7 @@ export default {
           import.meta.env.VITE_RPC_URL ||
             "https://rpc.xion-testnet-2.burnt.com:443",
           import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com",
-          "rum",
-          reclaimCredentials
+          "rum"
         );
       } else {
         // Use regular User Map formatting

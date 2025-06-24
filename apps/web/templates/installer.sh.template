@@ -36,9 +36,6 @@ USER_ADDRESS="{{userAddress}}"
 CONTRACT_TYPE="{{contractType}}"
 RUM_INDEX="{{rumIndex}}"
 
-# Reclaim credentials (if provided)
-APP_ID="{{appId}}"
-PROVIDER_ID="{{providerId}}"
 
 # Ask for user address if not provided
 if [ -z "$USER_ADDRESS" ]; then
@@ -138,19 +135,6 @@ if command_exists curl; then
   if [ -n "$RUM_INDEX" ] && [ "$RUM_INDEX" != "undefined" ]; then
     ENV_URL="${ENV_URL}&rum_index=${RUM_INDEX}"
   fi
-  
-  if [ -n "$APP_ID" ] && [ "$APP_ID" != "undefined" ] && [ "$APP_ID" != "" ]; then
-    ENV_URL="${ENV_URL}&app_id=${APP_ID}"
-  fi
-  
-  if [ -n "$PROVIDER_ID" ] && [ "$PROVIDER_ID" != "undefined" ] && [ "$PROVIDER_ID" != "" ]; then
-    ENV_URL="${ENV_URL}&provider_id=${PROVIDER_ID}"
-  fi
-  
-  # Debug output for RUM contracts
-  if [ "$CONTRACT_TYPE" = "rum" ]; then
-    echo -e "${BLUE}Fetching environment with URL: ${ENV_URL}${NC}"
-  fi
 
   ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)
 
@@ -181,19 +165,65 @@ fi
 
 echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
 
-# Check if this is a RUM contract without credentials
+# For RUM contracts, prompt for Reclaim credentials
 if [ "$CONTRACT_TYPE" = "rum" ]; then
-  # Check if the env file has placeholder Reclaim values
-  if grep -q "your-reclaim-app-id" .env.local; then
-    echo -e "\n${YELLOW}⚠️  Reclaim credentials not configured${NC}"
-    echo -e "${BLUE}To complete your RUM setup, you need to:${NC}"
-    echo -e "  1. Create an account at https://dev.reclaimprotocol.org"
-    echo -e "  2. Create a new application and get your App ID and App Secret"
-    echo -e "  3. Add a 'Twitter User Profile' provider and get the Provider ID"
-    echo -e "  4. Update the following values in your .env.local file:"
-    echo -e "     • EXPO_PUBLIC_RECLAIM_APP_ID"
-    echo -e "     • EXPO_PUBLIC_RECLAIM_APP_SECRET"
-    echo -e "     • EXPO_PUBLIC_RECLAIM_PROVIDER_ID"
+  echo -e "\n${BLUE}════════════════════════════════════════════════════════════${NC}"
+  echo -e "${BLUE}           Reclaim Protocol Configuration Required           ${NC}"
+  echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
+  
+  echo -e "\n${YELLOW}To use zkTLS proofs with your RUM contract, you need Reclaim credentials.${NC}"
+  echo -e "${BLUE}If you don't have them yet:${NC}"
+  echo -e "  1. Create an account at ${GREEN}https://dev.reclaimprotocol.org${NC}"
+  echo -e "  2. Create a new application"
+  echo -e "  3. Add a 'Twitter User Profile' provider"
+  echo -e "  4. Copy your credentials\n"
+  
+  echo -e "${BLUE}Would you like to configure your Reclaim credentials now? (y/n):${NC}"
+  read -p "" -n 1 -r
+  echo
+  
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Prompt for App ID
+    echo -e "\n${BLUE}Enter your Reclaim App ID:${NC}"
+    read -p "App ID: " RECLAIM_APP_ID
+    
+    # Prompt for App Secret
+    echo -e "\n${BLUE}Enter your Reclaim App Secret:${NC}"
+    echo -e "${YELLOW}(This will be hidden as you type for security)${NC}"
+    read -s -p "App Secret: " RECLAIM_APP_SECRET
+    echo
+    
+    # Prompt for Provider ID
+    echo -e "\n${BLUE}Enter your Reclaim Provider ID:${NC}"
+    read -p "Provider ID: " RECLAIM_PROVIDER_ID
+    
+    # Update the .env.local file with the credentials
+    if [ -n "$RECLAIM_APP_ID" ] && [ -n "$RECLAIM_PROVIDER_ID" ] && [ -n "$RECLAIM_APP_SECRET" ]; then
+      echo -e "\n${BLUE}Updating .env.local with your credentials...${NC}"
+      
+      # Update App ID
+      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_ID=\"your-reclaim-app-id\"/EXPO_PUBLIC_RECLAIM_APP_ID=\"$RECLAIM_APP_ID\"/" .env.local
+      
+      # Update Provider ID
+      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"your-reclaim-provider-id\"/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"$RECLAIM_PROVIDER_ID\"/" .env.local
+      
+      # Update App Secret
+      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"your-reclaim-app-secret\"/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"$RECLAIM_APP_SECRET\"/" .env.local
+      
+      # Clean up backup files
+      rm -f .env.local.bak
+      
+      echo -e "${GREEN}✓ Reclaim credentials have been configured successfully!${NC}"
+      echo -e "${YELLOW}Remember: Never commit your .env.local file to version control!${NC}"
+    else
+      echo -e "\n${YELLOW}Missing one or more credentials. Please update them manually in .env.local${NC}"
+    fi
+  else
+    echo -e "\n${YELLOW}You can configure your Reclaim credentials later by editing .env.local${NC}"
+    echo -e "${BLUE}Look for these variables:${NC}"
+    echo -e "  • EXPO_PUBLIC_RECLAIM_APP_ID"
+    echo -e "  • EXPO_PUBLIC_RECLAIM_PROVIDER_ID"
+    echo -e "  • EXPO_PUBLIC_RECLAIM_APP_SECRET"
   fi
 fi
 
@@ -221,34 +251,3 @@ fi
 # Note about contract addresses
 echo -e "\n${BLUE}Note: Your .env.local file has been populated with contract addresses.${NC}"
 echo -e "${BLUE}If you need to use different contract addresses, you can edit the .env.local file.${NC}"
-
-# Special instructions for RUM contracts
-if [ "$CONTRACT_TYPE" = "rum" ]; then
-  echo -e "\n${YELLOW}⚠️  Important: Reclaim App Secret Required${NC}"
-  echo -e "${BLUE}You need to manually add your Reclaim App Secret to the .env.local file:${NC}"
-  echo -e "${GREEN}EXPO_PUBLIC_RECLAIM_APP_SECRET=\"your-actual-secret-here\"${NC}"
-  echo -e "\n${BLUE}Security reminder:${NC}"
-  echo -e "  • Never commit the .env.local file to version control"
-  echo -e "  • Add .env.local to your .gitignore file"
-  echo -e "  • Keep your secret secure and rotate it regularly"
-  
-  # Optionally prompt for the secret
-  echo -e "\n${BLUE}Would you like to add your Reclaim App Secret now? (y/n):${NC}"
-  read -p "" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Please enter your Reclaim App Secret:${NC}"
-    read -s RECLAIM_SECRET
-    
-    if [ -n "$RECLAIM_SECRET" ]; then
-      # Update the .env.local file with the secret
-      sed -i.bak 's/EXPO_PUBLIC_RECLAIM_APP_SECRET="your-secret-here"/EXPO_PUBLIC_RECLAIM_APP_SECRET="'"$RECLAIM_SECRET"'"/' .env.local
-      rm .env.local.bak
-      echo -e "${GREEN}✓ Reclaim App Secret has been added to .env.local${NC}"
-    else
-      echo -e "${YELLOW}No secret entered. You'll need to add it manually later.${NC}"
-    fi
-  else
-    echo -e "${YELLOW}You'll need to add your Reclaim App Secret manually to .env.local${NC}"
-  fi
-fi

@@ -12,7 +12,6 @@ interface InstallationSectionProps {
   account: { bech32Address: string } | undefined;
   contractType?: "usermap" | "rum";
   rumIndex?: number;
-  reclaimCredentials?: { appId: string; providerId: string };
 }
 
 export function InstallationSection({
@@ -21,13 +20,12 @@ export function InstallationSection({
   account,
   contractType,
   rumIndex,
-  reclaimCredentials,
 }: InstallationSectionProps) {
   return (
     <article className="w-full mx-auto">
       <header className="mb-4">
-        <ArticleTitle>{launcherContent.step_4_title}</ArticleTitle>
-        <MutedText>{launcherContent.step_4_description}</MutedText>
+        <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
+        <MutedText>{launcherContent.step_3_description}</MutedText>
       </header>
 
       <Tabs.Root defaultValue="one-liner" className="w-full">
@@ -58,9 +56,7 @@ export function InstallationSection({
                 account?.bech32Address,
                 frontendTemplate,
                 contractType,
-                rumIndex,
-                reclaimCredentials?.appId,
-                reclaimCredentials?.providerId
+                rumIndex
               )}
             />
           </section>

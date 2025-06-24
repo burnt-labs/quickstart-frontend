@@ -12,12 +12,6 @@ export const VERIFICATION_CONTRACT_ADDRESS = "xion1qf8jtznwf0tykpg7e65gwafwp47rw
 // RUM contract checksum from code ID 1289 on testnet
 const RUM_CHECKSUM = "5A591A4DF6F433728AE43896C3777D05EC9287019CB3953051A9AB52297C2B20";
 
-export function getRumSalt(senderAddress: string, index: number): string {
-  // Use incrementing index with user address for unique salts
-  const addressSuffix = senderAddress.slice(-8);
-  return `rum-${index}-${addressSuffix}`;
-}
-
 export function predictRumAddress(
   senderAddress: string,
   saltString: string
@@ -31,14 +25,6 @@ export function predictRumAddress(
   });
 
   return predictedRumAddress;
-}
-
-export function predictRumAddressByIndex(
-  senderAddress: string,
-  index: number
-) {
-  const rumSalt = getRumSalt(senderAddress, index);
-  return predictRumAddress(senderAddress, rumSalt);
 }
 
 export async function generateInstantiateRumMessage(

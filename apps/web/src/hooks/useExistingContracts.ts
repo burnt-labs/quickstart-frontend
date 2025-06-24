@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchExistingContracts, verifyContractExists } from "@burnt-labs/quick-start-utils";
-import { predictRumAddressByIndex, getRumSalt } from "../lib/rum";
+import { predictRumAddress } from "../lib/rum";
 import { predictTreasuryAddress } from "../lib/treasury";
+import { INSTANTIATE_SALT } from "../config/constants";
 
 export const EXISTING_CONTRACTS_QUERY_KEY = "existing-contracts";
 
@@ -26,14 +27,13 @@ const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.bu
 async function checkRumContracts(address: string): Promise<{ contracts: RumContract[], nextIndex: number }> {
   const contracts: RumContract[] = [];
   
-  // Only check for RUM contract at index 0
+  // Check for RUM contract using the same salt as UserMap
   const index = 0;
-  const rumAddress = predictRumAddressByIndex(address, index);
-  const rumSalt = getRumSalt(address, index);
-  const treasuryAddress = predictTreasuryAddress(address, rumSalt);
+  const rumAddress = predictRumAddress(address, INSTANTIATE_SALT);
+  const treasuryAddress = predictTreasuryAddress(address, INSTANTIATE_SALT);
   
   console.log(`Checking RUM contract at address:`, rumAddress);
-  console.log(`Using salt:`, rumSalt);
+  console.log(`Using salt:`, INSTANTIATE_SALT);
   
   const rumExists = await verifyContractExists({
     address: rumAddress,

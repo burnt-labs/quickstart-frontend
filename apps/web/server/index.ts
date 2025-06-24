@@ -12,7 +12,7 @@ import {
 } from "@burnt-labs/quick-start-utils";
 import installerTemplate from "../templates/installer.sh.template?raw";
 import { formatEnvTextWithRum } from "../src/utils/formatEnvText";
-import { predictRumAddressByIndex } from "../src/lib/rum";
+import { predictRumAddress } from "../src/lib/rum";
 
 const REST_URL = import.meta.env.VITE_REST_URL;
 
@@ -161,9 +161,8 @@ export default {
     let treasuryAddress: string;
 
     if (params.contract_type === "rum") {
-      // For RUM contracts, use the RUM-specific prediction (always index 0)
-      const rumIndex = params.rum_index !== undefined ? parseInt(params.rum_index, 10) : 0;
-      appAddress = predictRumAddressByIndex(params.user_address, rumIndex);
+      // For RUM contracts, use the same salt as UserMap
+      appAddress = predictRumAddress(params.user_address, config.salt);
       
       // Treasury address remains the same
       const saltEncoded = new TextEncoder().encode(config.salt);

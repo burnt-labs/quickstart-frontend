@@ -6,7 +6,6 @@ import {
 import {
   generateInstantiateRumMessage,
   predictRumAddress,
-  getRumSalt,
 } from "./rum";
 import {
   generateInstantiateTreasuryMessage,
@@ -33,7 +32,7 @@ export async function assembleTransaction({
     throw new Error("Missing environment variables");
   }
 
-  // Always deploy both contracts
+  // Always deploy both contracts using the same salt
   // UserMap deployment
   const userMapAddress = predictUserMapAddress(senderAddress, saltString);
   const userMapMessage = await generateInstantiateUserMapMessage(
@@ -42,12 +41,11 @@ export async function assembleTransaction({
     USER_MAP_CODE_ID
   );
 
-  // RUM deployment (always with index 0 and hardcoded claim key)
-  const rumSalt = getRumSalt(senderAddress, 0);
-  const rumAddress = predictRumAddress(senderAddress, rumSalt);
+  // RUM deployment (using same salt as UserMap)
+  const rumAddress = predictRumAddress(senderAddress, saltString);
   const rumMessage = await generateInstantiateRumMessage(
     senderAddress,
-    rumSalt,
+    saltString,
     "followers_count"
   );
 

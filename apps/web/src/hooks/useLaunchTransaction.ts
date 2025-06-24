@@ -11,14 +11,14 @@ interface LaunchTransactionParams {
   saltString: string;
   client: GranteeSignerClient;
   contractType?: "usermap" | "rum";
-  claimKey?: string;
-  rumIndex?: number;
 }
 
 interface LaunchTransactionResult {
   tx: DeliverTxResponse;
   appAddress: string;
   treasuryAddress: string;
+  userMapAddress: string;
+  rumAddress: string;
 }
 
 export function useLaunchTransaction(
@@ -29,14 +29,12 @@ export function useLaunchTransaction(
   >
 ) {
   return useMutation<LaunchTransactionResult, Error, LaunchTransactionParams>({
-    mutationFn: async ({ senderAddress, saltString, client, contractType, claimKey, rumIndex }) => {
-      const { messages, appAddress, treasuryAddress } =
+    mutationFn: async ({ senderAddress, saltString, client, contractType }) => {
+      const { messages, appAddress, treasuryAddress, userMapAddress, rumAddress } =
         await assembleTransaction({
           senderAddress,
           saltString,
           contractType,
-          claimKey,
-          rumIndex,
         });
 
       const tx = await executeBatchTransaction({
@@ -49,6 +47,8 @@ export function useLaunchTransaction(
         tx,
         appAddress,
         treasuryAddress,
+        userMapAddress: userMapAddress!,
+        rumAddress: rumAddress!,
       };
     },
     ...options,

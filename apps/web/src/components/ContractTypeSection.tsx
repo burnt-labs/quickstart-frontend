@@ -6,21 +6,19 @@ interface ContractTypeSectionProps {
   contractType: ContractType;
   onContractTypeChange: (type: ContractType) => void;
   disabled?: boolean;
-  hasLaunchedContract?: boolean;
 }
 
 export function ContractTypeSection({
   contractType,
   onContractTypeChange,
   disabled = false,
-  hasLaunchedContract = false,
 }: ContractTypeSectionProps) {
   return (
     <article className="w-full mx-auto mb-8">
       <header className="mb-4">
         <ArticleTitle>Choose Contract Type</ArticleTitle>
         <MutedText>
-          Select between User Map for basic functionality or Reclaim User Map (RUM) for zkTLS integration
+          Both UserMap and RUM contracts will be deployed. This selection determines which environment variables are displayed.
         </MutedText>
       </header>
       
@@ -37,7 +35,7 @@ export function ContractTypeSection({
           >
             <h3 className="font-semibold mb-2">User Map</h3>
             <p className="text-sm text-gray-400">
-              Standard user map contract for basic JSON storage
+              Show environment variables for standard JSON storage
             </p>
           </button>
           
@@ -54,7 +52,7 @@ export function ContractTypeSection({
               Reclaim User Map (RUM)
             </h3>
             <p className="text-sm text-gray-400">
-              zkTLS-enabled contract for Twitter follower count verification
+              Show environment variables for zkTLS Twitter verification
             </p>
           </button>
         </div>

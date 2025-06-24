@@ -9,7 +9,6 @@ import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
 import {
   INSTANTIATE_SALT,
   DEFAULT_FRONTEND_TEMPLATE,
-  FRONTEND_TEMPLATES,
   type FrontendTemplate,
 } from "../config/constants";
 import { formatEnvTextWithRum } from "../utils/formatEnvText";
@@ -41,17 +40,26 @@ export default function Launcher() {
   );
   const [contractType, setContractType] = useState<ContractType>("usermap");
   const claimKey = "followers_count"; // Hardcoded for Twitter follower count verification
-  const [justDeployedAddresses, setJustDeployedAddresses] = useState<{appAddress: string; treasuryAddress: string} | null>(null);
+  const [justDeployedAddresses, setJustDeployedAddresses] = useState<{
+    appAddress: string; 
+    treasuryAddress: string;
+    userMapAddress?: string;
+    rumAddress?: string;
+  } | null>(null);
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
   const { data: existingContracts } = useExistingContracts(account?.bech32Address);
   
-  // Get the current addresses based on contract type
-  const addresses = justDeployedAddresses || (contractType === "rum" 
-    ? (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0 
-        ? existingContracts.rumContracts[existingContracts.rumContracts.length - 1] 
-        : undefined)
-    : existingContracts?.userMap);
+  // Get the current addresses - both contracts are deployed together
+  const addresses = justDeployedAddresses || 
+    (existingContracts?.userMap ? {
+      appAddress: contractType === "rum" 
+        ? existingContracts.rumContracts?.[0]?.appAddress 
+        : existingContracts.userMap.appAddress,
+      treasuryAddress: existingContracts.userMap.treasuryAddress,
+      userMapAddress: existingContracts.userMap.appAddress,
+      rumAddress: existingContracts.rumContracts?.[0]?.appAddress,
+    } : undefined);
   
 
   useEffect(() => {
@@ -82,26 +90,27 @@ export default function Launcher() {
       const newAddresses = {
         appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
+        userMapAddress: data.userMapAddress,
+        rumAddress: data.rumAddress,
       };
       
-      // Update the existingContracts state locally for immediate UI update
-      if (contractType === "rum") {
-        const newRumContract = {
-          ...newAddresses,
-          index: existingContracts?.nextRumIndex || 0,
+      // Update the existingContracts state for both contracts
+      const updatedContracts = {
+        ...existingContracts,
+        userMap: {
+          appAddress: data.userMapAddress,
+          treasuryAddress: data.treasuryAddress,
+        },
+        rumContracts: [{
+          appAddress: data.rumAddress,
+          treasuryAddress: data.treasuryAddress,
+          index: 0,
           claimKey,
-        };
-        queryClient.setQueryData([EXISTING_CONTRACTS_QUERY_KEY, account.bech32Address], {
-          ...existingContracts,
-          rumContracts: [...(existingContracts?.rumContracts || []), newRumContract],
-          nextRumIndex: (existingContracts?.nextRumIndex || 0) + 1,
-        });
-      } else {
-        queryClient.setQueryData([EXISTING_CONTRACTS_QUERY_KEY, account.bech32Address], {
-          ...existingContracts,
-          userMap: newAddresses,
-        });
-      }
+        }],
+        nextRumIndex: 1,
+      };
+      
+      queryClient.setQueryData([EXISTING_CONTRACTS_QUERY_KEY, account.bech32Address], updatedContracts);
       
       queryClient.invalidateQueries({
         queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
@@ -118,9 +127,9 @@ export default function Launcher() {
       setErrorMessage(error.message);
       console.error("Transaction failed:", error);
       
-      // If it's a duplicate contract error for RUM, show a clear message
-      if (contractType === "rum" && error.message.includes("contract address already exists")) {
-        setErrorMessage("A RUM contract has already been deployed. Only one RUM contract is allowed per wallet.");
+      // If it's a duplicate contract error, show a clear message
+      if (error.message.includes("contract address already exists")) {
+        setErrorMessage("Contracts have already been deployed. Only one set of contracts is allowed per wallet.");
         queryClient.invalidateQueries({
           queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
         });
@@ -131,9 +140,9 @@ export default function Launcher() {
   const handleLaunchClick = async () => {
     if (!client || !account) return;
 
-    // Prevent deploying multiple RUM contracts
-    if (contractType === "rum" && existingContracts?.rumContracts && existingContracts.rumContracts.length > 0) {
-      setErrorMessage("A RUM contract has already been deployed. Only one RUM contract is allowed per wallet.");
+    // Check if contracts have already been deployed
+    if (existingContracts?.userMap || (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0)) {
+      setErrorMessage("Contracts have already been deployed. Only one set of contracts is allowed per wallet.");
       return;
     }
 
@@ -143,8 +152,6 @@ export default function Launcher() {
         saltString: INSTANTIATE_SALT,
         client,
         contractType,
-        claimKey: contractType === "rum" ? claimKey : undefined,
-        rumIndex: contractType === "rum" ? 0 : undefined,
       });
     } catch (error) {
       console.error("Transaction failed:", error);
@@ -162,7 +169,6 @@ export default function Launcher() {
         contractType={contractType}
         onContractTypeChange={setContractType}
         disabled={false}
-        hasLaunchedContract={!!addresses}
       />
 
       <LaunchSection

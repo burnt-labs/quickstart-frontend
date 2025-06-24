@@ -19,14 +19,10 @@ export async function assembleTransaction({
   senderAddress,
   saltString,
   contractType = "usermap",
-  claimKey,
-  rumIndex,
 }: {
   senderAddress: string;
   saltString: string;
   contractType?: "usermap" | "rum";
-  claimKey?: string;
-  rumIndex?: number;
 }) {
   const messages: EncodeObject[] = [];
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
@@ -37,53 +33,54 @@ export async function assembleTransaction({
     throw new Error("Missing environment variables");
   }
 
-  if (contractType === "rum" && !claimKey) {
-    throw new Error("Claim key is required for RUM contract");
-  }
+  // Always deploy both contracts
+  // UserMap deployment
+  const userMapAddress = predictUserMapAddress(senderAddress, saltString);
+  const userMapMessage = await generateInstantiateUserMapMessage(
+    senderAddress,
+    saltString,
+    USER_MAP_CODE_ID
+  );
 
-  let appAddress: string;
-  let appMessage: EncodeObject;
-  let actualSalt: string;
+  // RUM deployment (always with index 0 and hardcoded claim key)
+  const rumSalt = getRumSalt(senderAddress, 0);
+  const rumAddress = predictRumAddress(senderAddress, rumSalt);
+  const rumMessage = await generateInstantiateRumMessage(
+    senderAddress,
+    rumSalt,
+    "followers_count"
+  );
 
-  if (contractType === "rum") {
-    if (rumIndex === undefined) {
-      throw new Error("RUM index is required for RUM contract deployment");
-    }
-    actualSalt = getRumSalt(senderAddress, rumIndex);
-    appAddress = predictRumAddress(senderAddress, actualSalt);
-    appMessage = await generateInstantiateRumMessage(
-      senderAddress,
-      actualSalt,
-      claimKey!
-    );
-  } else {
-    actualSalt = saltString;
-    appAddress = predictUserMapAddress(senderAddress, saltString);
-    appMessage = await generateInstantiateUserMapMessage(
-      senderAddress,
-      saltString,
-      USER_MAP_CODE_ID
-    );
-  }
-
-  const treasuryAddress = predictTreasuryAddress(senderAddress, actualSalt, contractType);
+  // Treasury needs to allow execution of both contracts
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    actualSalt,
-    appAddress,
+    saltString,
+    userMapAddress,
     TREASURY_CODE_ID,
-    contractType
+    contractType,
+    rumAddress
   );
+
   const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
     senderAddress,
     treasuryAddress,
     FAUCET_ADDRESS
   );
 
-  messages.push(appMessage, treasuryMessage, requestFaucetTokensMessage);
+  messages.push(userMapMessage, rumMessage, treasuryMessage, requestFaucetTokensMessage);
 
-  return { messages, appAddress, treasuryAddress };
+  // Return the address that corresponds to the selected type for display purposes
+  const displayAddress = contractType === "rum" ? rumAddress : userMapAddress;
+
+  return { 
+    messages, 
+    appAddress: displayAddress, 
+    treasuryAddress,
+    userMapAddress,
+    rumAddress 
+  };
 }
 
 export async function executeBatchTransaction({

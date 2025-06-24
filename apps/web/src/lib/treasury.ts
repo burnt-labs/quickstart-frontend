@@ -26,21 +26,46 @@ export function predictTreasuryAddress(
 export function generateTreasuryInitMsg({
   adminAddress,
   userMapAddress,
-  contractType = "usermap",
+  rumAddress,
 }: {
   adminAddress: string;
   userMapAddress: string;
-  contractType?: "usermap" | "rum";
+  rumAddress?: string;
 }) {
-  const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
+  const userMapAuthzBase64 = encodeContractExecutionAuthorizationBase64({
     contractAddress: userMapAddress,
     maxAmount: "2500",
     denom: "uxion",
   });
 
-  const contractDescription = contractType === "rum" 
-    ? "Reclaim User Map (RUM) Contract" 
-    : "User Map Contract";
+  const grant_configs = [
+    {
+      description: "Allow execution of the User Map Contract",
+      optional: false,
+      authorization: {
+        type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
+        value: userMapAuthzBase64,
+      },
+    },
+  ];
+
+  // Add RUM authorization if RUM address is provided
+  if (rumAddress) {
+    const rumAuthzBase64 = encodeContractExecutionAuthorizationBase64({
+      contractAddress: rumAddress,
+      maxAmount: "2500",
+      denom: "uxion",
+    });
+
+    grant_configs.push({
+      description: "Allow execution of the Reclaim User Map (RUM) Contract",
+      optional: false,
+      authorization: {
+        type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
+        value: rumAuthzBase64,
+      },
+    });
+  }
 
   const treasuryInitMsg = {
     admin: adminAddress,
@@ -52,19 +77,10 @@ export function generateTreasuryInitMsg({
       metadata: "{}",
     },
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
-    grant_configs: [
-      {
-        description: `Allow execution of the ${contractDescription}`,
-        optional: false,
-        authorization: {
-          type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
-          value: contractAuthzBase64,
-        },
-      },
-    ],
+    grant_configs,
     fee_config: {
       description:
-        `This pays fees for executing messages on the ${contractDescription}.`,
+        "This pays fees for executing messages on the User Map and RUM contracts.",
       allowance: {
         type_url: "/cosmos.feegrant.v1beta1.PeriodicAllowance",
         value: STATIC_PERIODIC_ALLOWANCE_BASE64,
@@ -80,16 +96,17 @@ export async function generateInstantiateTreasuryMessage(
   saltString: string,
   userMapAddress: string,
   treasuryCodeId: number,
-  contractType?: "usermap" | "rum"
+  _contractType?: "usermap" | "rum",
+  rumAddress?: string
 ) {
   const salt = new TextEncoder().encode(saltString);
 
-  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString, contractType);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const treasuryInitMsg = generateTreasuryInitMsg({
     adminAddress: treasuryAddress,
     userMapAddress,
-    contractType,
+    rumAddress,
   });
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({

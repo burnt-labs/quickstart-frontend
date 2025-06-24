@@ -14,7 +14,6 @@ export function formatEnvTextWithRum(
   if (contractType === "rum") {
     // For RUM contracts, include additional environment variables
     const appId = reclaimCredentials?.appId || "your-reclaim-app-id";
-    const appSecret = reclaimCredentials?.appSecret || "your-reclaim-secret";
     const providerId = reclaimCredentials?.providerId || "your-reclaim-provider-id";
     
     if (template === FRONTEND_TEMPLATES.WEBAPP) {
@@ -26,7 +25,8 @@ NEXT_PUBLIC_CODE_ID="${RUM_CODE_ID}"
 NEXT_PUBLIC_VERIFICATION_CONTRACT_ADDRESS="${VERIFICATION_CONTRACT_ADDRESS}"
 NEXT_PUBLIC_RUM_CONTRACT_ADDRESS="${addresses.appAddress}"
 NEXT_PUBLIC_RECLAIM_APP_ID="${appId}"
-NEXT_PUBLIC_RECLAIM_APP_SECRET="${appSecret}"
+# Add your Reclaim App Secret manually (do not commit to version control):
+# NEXT_PUBLIC_RECLAIM_APP_SECRET="your-secret-here"
 NEXT_PUBLIC_RECLAIM_PROVIDER_ID="${providerId}"`;
     }
 
@@ -38,8 +38,10 @@ EXPO_PUBLIC_CODE_ID="${RUM_CODE_ID}"
 EXPO_PUBLIC_VERIFICATION_CONTRACT_ADDRESS="${VERIFICATION_CONTRACT_ADDRESS}"
 EXPO_PUBLIC_RUM_CONTRACT_ADDRESS="${addresses.appAddress}"
 EXPO_PUBLIC_RECLAIM_APP_ID="${appId}"
-EXPO_PUBLIC_RECLAIM_APP_SECRET="${appSecret}"
-EXPO_PUBLIC_RECLAIM_PROVIDER_ID="${providerId}"`;
+EXPO_PUBLIC_RECLAIM_PROVIDER_ID="${providerId}"
+
+# Add your Reclaim App Secret manually (do not commit to version control):
+EXPO_PUBLIC_RECLAIM_APP_SECRET="your-secret-here"`;
   }
 
   // Default User Map format

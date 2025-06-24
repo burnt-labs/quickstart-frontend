@@ -13,9 +13,7 @@ export function predictTreasuryAddress(
   saltString: string,
   contractType: "usermap" | "rum" = "usermap"
 ) {
-  // Use different salt for RUM treasury to avoid collision
-  const treasurySalt = contractType === "rum" ? `${saltString}-rum` : saltString;
-  const salt = new TextEncoder().encode(treasurySalt);
+  const salt = new TextEncoder().encode(saltString);
 
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
@@ -85,9 +83,7 @@ export async function generateInstantiateTreasuryMessage(
   treasuryCodeId: number,
   contractType?: "usermap" | "rum"
 ) {
-  // Use different salt for RUM treasury to avoid collision
-  const treasurySalt = contractType === "rum" ? `${saltString}-rum` : saltString;
-  const salt = new TextEncoder().encode(treasurySalt);
+  const salt = new TextEncoder().encode(saltString);
 
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString, contractType);
 

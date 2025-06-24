@@ -12,6 +12,7 @@ interface LaunchTransactionParams {
   client: GranteeSignerClient;
   contractType?: "usermap" | "rum";
   claimKey?: string;
+  rumIndex?: number;
 }
 
 interface LaunchTransactionResult {
@@ -28,13 +29,14 @@ export function useLaunchTransaction(
   >
 ) {
   return useMutation<LaunchTransactionResult, Error, LaunchTransactionParams>({
-    mutationFn: async ({ senderAddress, saltString, client, contractType, claimKey }) => {
+    mutationFn: async ({ senderAddress, saltString, client, contractType, claimKey, rumIndex }) => {
       const { messages, appAddress, treasuryAddress } =
         await assembleTransaction({
           senderAddress,
           saltString,
           contractType,
           claimKey,
+          rumIndex,
         });
 
       const tx = await executeBatchTransaction({

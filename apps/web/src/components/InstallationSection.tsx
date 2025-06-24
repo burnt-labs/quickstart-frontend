@@ -20,8 +20,8 @@ export function InstallationSection({
   return (
     <article className="w-full mx-auto">
       <header className="mb-4">
-        <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
-        <MutedText>{launcherContent.step_3_description}</MutedText>
+        <ArticleTitle>{launcherContent.step_4_title}</ArticleTitle>
+        <MutedText>{launcherContent.step_4_description}</MutedText>
       </header>
 
       <Tabs.Root defaultValue="one-liner" className="w-full">

@@ -21,7 +21,9 @@ import launcherContent from "../content/launcher.json";
 import { LaunchSection } from "./LaunchSection";
 import { FrameworkSelectionSection } from "./FrameworkSelectionSection";
 import { InstallationSection } from "./InstallationSection";
-import { ContractTypeSection, type ContractType, type ReclaimCredentials } from "./ContractTypeSection";
+import { ContractTypeSection, type ContractType } from "./ContractTypeSection";
+import { ReclaimCredentialsSection, type ReclaimCredentials } from "./ReclaimCredentialsSection";
+import { AddSecretSection } from "./AddSecretSection";
 
 const RPC_URL =
   import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
@@ -45,19 +47,27 @@ export default function Launcher() {
     appSecret: "",
     providerId: "",
   });
+  const [justDeployedAddresses, setJustDeployedAddresses] = useState<{appAddress: string; treasuryAddress: string} | null>(null);
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
   const { data: existingContracts } = useExistingContracts(account?.bech32Address);
   
   // Get the current addresses based on contract type
-  const addresses = contractType === "rum" ? existingContracts?.rum : existingContracts?.userMap;
+  const addresses = justDeployedAddresses || (contractType === "rum" 
+    ? (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0 
+        ? existingContracts.rumContracts[existingContracts.rumContracts.length - 1] 
+        : undefined)
+    : existingContracts?.userMap);
   
   // For displaying env vars, show any deployed contracts
-  const hasAnyDeployedContracts = existingContracts?.userMap || existingContracts?.rum;
+  const hasAnyDeployedContracts = existingContracts?.userMap || (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0);
 
   useEffect(() => {
     // Show env vars for deployed contracts even if viewing different contract type
-    const displayAddresses = addresses || existingContracts?.userMap || existingContracts?.rum;
+    const displayAddresses = addresses || existingContracts?.userMap || 
+      (existingContracts?.rumContracts && existingContracts.rumContracts.length > 0 
+        ? existingContracts.rumContracts[existingContracts.rumContracts.length - 1] 
+        : undefined);
     if (displayAddresses) {
       setTextboxValue(
         formatEnvTextWithRum(displayAddresses, frontendTemplate, RPC_URL, REST_URL, contractType, reclaimCredentials)
@@ -70,6 +80,8 @@ export default function Launcher() {
     if (contractType === "rum" && frontendTemplate === FRONTEND_TEMPLATES.WEBAPP) {
       setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE);
     }
+    // Clear just deployed addresses when switching contract types
+    setJustDeployedAddresses(null);
   }, [contractType, frontendTemplate]);
 
   const {
@@ -85,9 +97,15 @@ export default function Launcher() {
       
       // Update the existingContracts state locally for immediate UI update
       if (contractType === "rum") {
+        const newRumContract = {
+          ...newAddresses,
+          index: existingContracts?.nextRumIndex || 0,
+          claimKey,
+        };
         queryClient.setQueryData([EXISTING_CONTRACTS_QUERY_KEY, account.bech32Address], {
           ...existingContracts,
-          rum: newAddresses,
+          rumContracts: [...(existingContracts?.rumContracts || []), newRumContract],
+          nextRumIndex: (existingContracts?.nextRumIndex || 0) + 1,
         });
       } else {
         queryClient.setQueryData([EXISTING_CONTRACTS_QUERY_KEY, account.bech32Address], {
@@ -103,26 +121,29 @@ export default function Launcher() {
         formatEnvTextWithRum(newAddresses, frontendTemplate, RPC_URL, REST_URL, contractType, reclaimCredentials)
       );
       setTransactionHash(data.tx.transactionHash);
+      setJustDeployedAddresses(newAddresses);
       console.log("Transaction result:", data.tx);
     },
     onError: (error) => {
       setErrorMessage(error.message);
       console.error("Transaction failed:", error);
+      
+      // If it's a duplicate contract error for RUM, increment the index and refetch
+      if (contractType === "rum" && error.message.includes("contract address already exists")) {
+        console.log("RUM contract already exists at this index, refetching contracts...");
+        queryClient.invalidateQueries({
+          queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
+        });
+      }
     },
   });
 
   const handleLaunchClick = async () => {
     if (!client || !account) return;
 
-    if (contractType === "rum") {
-      if (!claimKey.trim()) {
-        setErrorMessage("Claim key is required for RUM contract deployment");
-        return;
-      }
-      if (!reclaimCredentials.appId.trim() || !reclaimCredentials.appSecret.trim() || !reclaimCredentials.providerId.trim()) {
-        setErrorMessage("All Reclaim Protocol credentials are required for RUM contract deployment");
-        return;
-      }
+    if (contractType === "rum" && !claimKey.trim()) {
+      setErrorMessage("Claim key is required for RUM contract deployment");
+      return;
     }
 
     try {
@@ -132,6 +153,7 @@ export default function Launcher() {
         client,
         contractType,
         claimKey: contractType === "rum" ? claimKey : undefined,
+        rumIndex: contractType === "rum" ? existingContracts?.nextRumIndex : undefined,
       });
     } catch (error) {
       console.error("Transaction failed:", error);
@@ -150,9 +172,8 @@ export default function Launcher() {
         onContractTypeChange={setContractType}
         claimKey={claimKey}
         onClaimKeyChange={setClaimKey}
-        reclaimCredentials={reclaimCredentials}
-        onReclaimCredentialsChange={setReclaimCredentials}
         disabled={false}
+        existingRumContracts={existingContracts?.rumContracts}
       />
 
       <LaunchSection
@@ -166,7 +187,7 @@ export default function Launcher() {
         contractType={contractType}
       />
 
-      {hasAnyDeployedContracts && (
+      {addresses && (
         <>
           <FrameworkSelectionSection
             frontendTemplate={frontendTemplate}
@@ -174,11 +195,27 @@ export default function Launcher() {
             contractType={contractType}
           />
 
-          <InstallationSection
-            frontendTemplate={frontendTemplate}
-            textboxValue={textboxValue}
-            account={account}
-          />
+          {contractType === "rum" && (
+            <ReclaimCredentialsSection
+              credentials={reclaimCredentials}
+              onCredentialsChange={setReclaimCredentials}
+            />
+          )}
+
+          {((contractType === "usermap") || 
+            (contractType === "rum" && reclaimCredentials.appId && reclaimCredentials.providerId)) && (
+            <>
+              <InstallationSection
+                frontendTemplate={frontendTemplate}
+                textboxValue={textboxValue}
+                account={account}
+              />
+              
+              {contractType === "rum" && (
+                <AddSecretSection />
+              )}
+            </>
+          )}
         </>
       )}
     </div>

@@ -6,6 +6,7 @@ import {
 import {
   generateInstantiateRumMessage,
   predictRumAddress,
+  getRumSalt,
 } from "./rum";
 import {
   generateInstantiateTreasuryMessage,
@@ -19,11 +20,13 @@ export async function assembleTransaction({
   saltString,
   contractType = "usermap",
   claimKey,
+  rumIndex,
 }: {
   senderAddress: string;
   saltString: string;
   contractType?: "usermap" | "rum";
   claimKey?: string;
+  rumIndex?: number;
 }) {
   const messages: EncodeObject[] = [];
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
@@ -40,15 +43,21 @@ export async function assembleTransaction({
 
   let appAddress: string;
   let appMessage: EncodeObject;
+  let actualSalt: string;
 
   if (contractType === "rum") {
-    appAddress = predictRumAddress(senderAddress, saltString);
+    if (rumIndex === undefined) {
+      throw new Error("RUM index is required for RUM contract deployment");
+    }
+    actualSalt = getRumSalt(senderAddress, rumIndex);
+    appAddress = predictRumAddress(senderAddress, actualSalt);
     appMessage = await generateInstantiateRumMessage(
       senderAddress,
-      saltString,
+      actualSalt,
       claimKey!
     );
   } else {
+    actualSalt = saltString;
     appAddress = predictUserMapAddress(senderAddress, saltString);
     appMessage = await generateInstantiateUserMapMessage(
       senderAddress,
@@ -57,11 +66,11 @@ export async function assembleTransaction({
     );
   }
 
-  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString, contractType);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, actualSalt, contractType);
 
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    saltString,
+    actualSalt,
     appAddress,
     TREASURY_CODE_ID,
     contractType

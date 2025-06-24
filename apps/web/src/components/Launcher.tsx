@@ -119,9 +119,9 @@ export default function Launcher() {
       setErrorMessage(error.message);
       console.error("Transaction failed:", error);
       
-      // If it's a duplicate contract error for RUM, increment the index and refetch
+      // If it's a duplicate contract error for RUM, show a clear message
       if (contractType === "rum" && error.message.includes("contract address already exists")) {
-        console.log("RUM contract already exists at this index, refetching contracts...");
+        setErrorMessage("A RUM contract has already been deployed. Only one RUM contract is allowed per wallet.");
         queryClient.invalidateQueries({
           queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
         });
@@ -132,6 +132,11 @@ export default function Launcher() {
   const handleLaunchClick = async () => {
     if (!client || !account) return;
 
+    // Prevent deploying multiple RUM contracts
+    if (contractType === "rum" && existingContracts?.rumContracts && existingContracts.rumContracts.length > 0) {
+      setErrorMessage("A RUM contract has already been deployed. Only one RUM contract is allowed per wallet.");
+      return;
+    }
 
     try {
       await launchTransaction({

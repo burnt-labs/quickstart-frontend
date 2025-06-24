@@ -25,39 +25,36 @@ const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.bu
 
 async function checkRumContracts(address: string): Promise<{ contracts: RumContract[], nextIndex: number }> {
   const contracts: RumContract[] = [];
-  let index = 0;
-  const maxChecks = 10; // Check up to 10 RUM contracts
   
-  while (index < maxChecks) {
-    const rumAddress = predictRumAddressByIndex(address, index);
-    const rumSalt = getRumSalt(address, index);
-    const treasuryAddress = predictTreasuryAddress(address, rumSalt);
-    
-    console.log(`Checking RUM contract ${index} at address:`, rumAddress);
-    console.log(`Using salt:`, rumSalt);
-    
-    const rumExists = await verifyContractExists({
-      address: rumAddress,
-      restUrl: REST_URL,
-    });
-    
-    console.log(`RUM contract ${index} exists:`, rumExists);
-    
-    if (!rumExists) {
-      break; // Found the next available index
-    }
-    
+  // Only check for RUM contract at index 0
+  const index = 0;
+  const rumAddress = predictRumAddressByIndex(address, index);
+  const rumSalt = getRumSalt(address, index);
+  const treasuryAddress = predictTreasuryAddress(address, rumSalt);
+  
+  console.log(`Checking RUM contract at address:`, rumAddress);
+  console.log(`Using salt:`, rumSalt);
+  
+  const rumExists = await verifyContractExists({
+    address: rumAddress,
+    restUrl: REST_URL,
+  });
+  
+  console.log(`RUM contract exists:`, rumExists);
+  
+  if (rumExists) {
     contracts.push({
       appAddress: rumAddress,
       treasuryAddress,
       index,
     });
-    
-    index++;
   }
   
-  console.log(`Found ${contracts.length} RUM contracts, next index: ${index}`);
-  return { contracts, nextIndex: index };
+  // Next index is always 0 if no contract exists, or 1 if contract exists
+  const nextIndex = rumExists ? 1 : 0;
+  
+  console.log(`Found ${contracts.length} RUM contracts, next index: ${nextIndex}`);
+  return { contracts, nextIndex };
 }
 
 export const useExistingContracts = (address: string) => {

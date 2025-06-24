@@ -122,7 +122,7 @@ echo -e "\n${BLUE}Creating .env.local file...${NC}"
 if command_exists curl; then
   
   # Try to fetch environment values from the server
-  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
+  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=false"
 
   if [ -n "$USER_ADDRESS" ]; then
     ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
@@ -183,41 +183,64 @@ if [ "$CONTRACT_TYPE" = "rum" ]; then
   echo
   
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Prompt for App ID
-    echo -e "\n${BLUE}Enter your Reclaim App ID:${NC}"
-    read -p "App ID: " RECLAIM_APP_ID
-    
-    # Prompt for App Secret
-    echo -e "\n${BLUE}Enter your Reclaim App Secret:${NC}"
-    echo -e "${YELLOW}(This will be hidden as you type for security)${NC}"
-    read -s -p "App Secret: " RECLAIM_APP_SECRET
-    echo
-    
-    # Prompt for Provider ID
-    echo -e "\n${BLUE}Enter your Reclaim Provider ID:${NC}"
-    read -p "Provider ID: " RECLAIM_PROVIDER_ID
-    
-    # Update the .env.local file with the credentials
-    if [ -n "$RECLAIM_APP_ID" ] && [ -n "$RECLAIM_PROVIDER_ID" ] && [ -n "$RECLAIM_APP_SECRET" ]; then
-      echo -e "\n${BLUE}Updating .env.local with your credentials...${NC}"
+    # Keep trying until we get all credentials or user gives up
+    while true; do
+      # Prompt for App ID
+      echo -e "\n${BLUE}Enter your Reclaim App ID:${NC}"
+      read -p "App ID: " RECLAIM_APP_ID
       
-      # Update App ID
-      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_ID=\"your-reclaim-app-id\"/EXPO_PUBLIC_RECLAIM_APP_ID=\"$RECLAIM_APP_ID\"/" .env.local
+      # Prompt for App Secret
+      echo -e "\n${BLUE}Enter your Reclaim App Secret:${NC}"
+      echo -e "${YELLOW}(This will be hidden as you type for security)${NC}"
+      read -s -p "App Secret: " RECLAIM_APP_SECRET
+      echo
       
-      # Update Provider ID
-      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"your-reclaim-provider-id\"/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"$RECLAIM_PROVIDER_ID\"/" .env.local
+      # Prompt for Provider ID
+      echo -e "\n${BLUE}Enter your Reclaim Provider ID:${NC}"
+      read -p "Provider ID: " RECLAIM_PROVIDER_ID
       
-      # Update App Secret
-      sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"your-reclaim-app-secret\"/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"$RECLAIM_APP_SECRET\"/" .env.local
+      # Trim whitespace from all credentials
+      RECLAIM_APP_ID=$(echo "$RECLAIM_APP_ID" | xargs)
+      RECLAIM_APP_SECRET=$(echo "$RECLAIM_APP_SECRET" | xargs)
+      RECLAIM_PROVIDER_ID=$(echo "$RECLAIM_PROVIDER_ID" | xargs)
       
-      # Clean up backup files
-      rm -f .env.local.bak
-      
-      echo -e "${GREEN}✓ Reclaim credentials have been configured successfully!${NC}"
-      echo -e "${YELLOW}Remember: Never commit your .env.local file to version control!${NC}"
-    else
-      echo -e "\n${YELLOW}Missing one or more credentials. Please update them manually in .env.local${NC}"
-    fi
+      # Check if all credentials are provided
+      if [ -n "$RECLAIM_APP_ID" ] && [ -n "$RECLAIM_PROVIDER_ID" ] && [ -n "$RECLAIM_APP_SECRET" ]; then
+        echo -e "\n${BLUE}Updating .env.local with your credentials...${NC}"
+        
+        # Update App ID
+        sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_ID=\"your-reclaim-app-id\"/EXPO_PUBLIC_RECLAIM_APP_ID=\"$RECLAIM_APP_ID\"/" .env.local
+        
+        # Update Provider ID
+        sed -i.bak "s/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"your-reclaim-provider-id\"/EXPO_PUBLIC_RECLAIM_PROVIDER_ID=\"$RECLAIM_PROVIDER_ID\"/" .env.local
+        
+        # Update App Secret
+        sed -i.bak "s/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"your-reclaim-app-secret\"/EXPO_PUBLIC_RECLAIM_APP_SECRET=\"$RECLAIM_APP_SECRET\"/" .env.local
+        
+        # Clean up backup files
+        rm -f .env.local.bak
+        
+        echo -e "${GREEN}✓ Reclaim credentials have been configured successfully!${NC}"
+        echo -e "${YELLOW}Remember: Never commit your .env.local file to version control!${NC}"
+        break
+      else
+        # Show which credentials are missing
+        echo -e "\n${RED}Missing credentials:${NC}"
+        [ -z "$RECLAIM_APP_ID" ] && echo -e "  - App ID"
+        [ -z "$RECLAIM_APP_SECRET" ] && echo -e "  - App Secret"
+        [ -z "$RECLAIM_PROVIDER_ID" ] && echo -e "  - Provider ID"
+        
+        echo -e "\n${YELLOW}All three credentials are required for RUM to work properly.${NC}"
+        echo -e "${BLUE}Would you like to try again? (y/n):${NC}"
+        read -p "" -n 1 -r RETRY_REPLY
+        echo
+        
+        if [[ ! $RETRY_REPLY =~ ^[Yy]$ ]]; then
+          echo -e "\n${YELLOW}You can configure your Reclaim credentials later by editing .env.local${NC}"
+          break
+        fi
+      fi
+    done
   else
     echo -e "\n${YELLOW}You can configure your Reclaim credentials later by editing .env.local${NC}"
     echo -e "${BLUE}Look for these variables:${NC}"

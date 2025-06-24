@@ -25,7 +25,8 @@ export function buildInstallUrl(
     url.searchParams.append('user_address', userAddress);
   }
 
-  if (template) {
+  // Only include template for non-RUM contracts (RUM always uses mobile)
+  if (template && contractType !== 'rum') {
     url.searchParams.append('template', template);
   }
 

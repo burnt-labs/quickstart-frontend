@@ -109,19 +109,22 @@ export default {
     if (url.pathname.startsWith("/install/")) {
       // Get user_address and template from query parameters if available
       const userAddress = url.searchParams.get("user_address") || "";
-      const template =
-        url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
       const contractType = url.searchParams.get("contract_type") || "usermap";
       
+      // Template is always mobile for RUM, otherwise from URL or default to webapp
+      const template = contractType === "rum" 
+        ? FRONTEND_TEMPLATES.MOBILE
+        : (url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP);
+      
 
-      // Set repository URL based on template (RUM always uses mobile)
+      // Set repository URL based on template
       const repoUrl =
-        template === FRONTEND_TEMPLATES.MOBILE || contractType === "rum"
+        template === FRONTEND_TEMPLATES.MOBILE
           ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
           : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
 
       const repoName =
-        template === FRONTEND_TEMPLATES.MOBILE || contractType === "rum"
+        template === FRONTEND_TEMPLATES.MOBILE
           ? "xion-mobile-quickstart"
           : "xion-web-quickstart";
 
@@ -133,7 +136,7 @@ export default {
       templateContent = templateContent
         .replace(/{{repoUrl}}/g, repoUrl)
         .replace(/{{repoName}}/g, repoName)
-        .replace(/{{template}}/g, contractType === "rum" ? "mobile" : template)
+        .replace(/{{template}}/g, template)
         .replace(/{{serverUrl}}/g, serverUrl)
         .replace(/{{userAddress}}/g, userAddress)
         .replace(/{{contractType}}/g, contractType);

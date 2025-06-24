@@ -22,6 +22,7 @@ import { LaunchSection } from "./LaunchSection";
 import { FrameworkSelectionSection } from "./FrameworkSelectionSection";
 import { InstallationSection } from "./InstallationSection";
 import { ContractTypeSection, type ContractType } from "./ContractTypeSection";
+import { getEffectiveTemplate } from "../utils/getEffectiveTemplate";
 
 const RPC_URL =
   import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
@@ -60,20 +61,17 @@ export default function Launcher() {
         ? existingContracts.rumContracts[existingContracts.rumContracts.length - 1] 
         : undefined);
     if (displayAddresses) {
+      const effectiveTemplate = getEffectiveTemplate(contractType, frontendTemplate);
       setTextboxValue(
-        formatEnvTextWithRum(displayAddresses, frontendTemplate, RPC_URL, REST_URL, contractType)
+        formatEnvTextWithRum(displayAddresses, effectiveTemplate, RPC_URL, REST_URL, contractType)
       );
     }
   }, [addresses, existingContracts, frontendTemplate, contractType]);
   
   useEffect(() => {
-    // Automatically switch to mobile template when RUM is selected
-    if (contractType === "rum" && frontendTemplate === FRONTEND_TEMPLATES.WEBAPP) {
-      setFrontendTemplate(FRONTEND_TEMPLATES.MOBILE);
-    }
     // Clear just deployed addresses when switching contract types
     setJustDeployedAddresses(null);
-  }, [contractType, frontendTemplate]);
+  }, [contractType]);
 
   const {
     mutateAsync: launchTransaction,
@@ -108,8 +106,9 @@ export default function Launcher() {
       queryClient.invalidateQueries({
         queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
       });
+      const effectiveTemplate = getEffectiveTemplate(contractType, frontendTemplate);
       setTextboxValue(
-        formatEnvTextWithRum(newAddresses, frontendTemplate, RPC_URL, REST_URL, contractType)
+        formatEnvTextWithRum(newAddresses, effectiveTemplate, RPC_URL, REST_URL, contractType)
       );
       setTransactionHash(data.tx.transactionHash);
       setJustDeployedAddresses(newAddresses);
@@ -186,7 +185,7 @@ export default function Launcher() {
           />
 
           <InstallationSection
-            frontendTemplate={frontendTemplate}
+            frontendTemplate={getEffectiveTemplate(contractType, frontendTemplate)}
             textboxValue={textboxValue}
             account={account}
             contractType={contractType}

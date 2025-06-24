@@ -3,6 +3,7 @@ import { EncodeObject } from "@cosmjs/proto-signing";
 import { toUtf8 } from "@cosmjs/encoding";
 import {
   encodeContractExecutionAuthorizationBase64,
+  encodeMultiContractExecutionAuthorizationBase64,
   STATIC_PERIODIC_ALLOWANCE_BASE64,
 } from "./encodeContractGrantAndAllowance";
 import { predictInstantiate2Address } from "@burnt-labs/quick-start-utils";
@@ -32,40 +33,30 @@ export function generateTreasuryInitMsg({
   userMapAddress: string;
   rumAddress?: string;
 }) {
-  const userMapAuthzBase64 = encodeContractExecutionAuthorizationBase64({
-    contractAddress: userMapAddress,
+  // Create a single grant config with both contracts
+  const contractAddresses = [userMapAddress];
+  if (rumAddress) {
+    contractAddresses.push(rumAddress);
+  }
+
+  const authzBase64 = encodeMultiContractExecutionAuthorizationBase64({
+    contractAddresses,
     maxAmount: "2500",
     denom: "uxion",
   });
 
   const grant_configs = [
     {
-      description: "Allow execution of the User Map Contract",
+      description: rumAddress 
+        ? "Allow execution of the User Map and RUM Contracts"
+        : "Allow execution of the User Map Contract",
       optional: false,
       authorization: {
         type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
-        value: userMapAuthzBase64,
+        value: authzBase64,
       },
     },
   ];
-
-  // Add RUM authorization if RUM address is provided
-  if (rumAddress) {
-    const rumAuthzBase64 = encodeContractExecutionAuthorizationBase64({
-      contractAddress: rumAddress,
-      maxAmount: "2500",
-      denom: "uxion",
-    });
-
-    grant_configs.push({
-      description: "Allow execution of the Reclaim User Map (RUM) Contract",
-      optional: false,
-      authorization: {
-        type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
-        value: rumAuthzBase64,
-      },
-    });
-  }
 
   const treasuryInitMsg = {
     admin: adminAddress,

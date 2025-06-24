@@ -14,6 +14,7 @@
   "copypaste_box_default_text": "Once you've launched your contract, copy and paste the following into your .env.local file",
   "launch_button_text": {
     "default": "Launch User Map & Fund Treasury",
+    "default_rum": "Launch RUM Contract & Fund Treasury", 
     "launched": "Already Launched ✓",
     "launching": "Launching..."
   },

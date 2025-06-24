@@ -12,6 +12,7 @@ interface LaunchSectionProps {
   transactionHash: string;
   errorMessage: string;
   onErrorClose: () => void;
+  contractType?: "usermap" | "rum";
 }
 
 export function LaunchSection({
@@ -22,6 +23,7 @@ export function LaunchSection({
   transactionHash,
   errorMessage,
   onErrorClose,
+  contractType = "usermap",
 }: LaunchSectionProps) {
   return (
     <article className="w-full mx-auto">
@@ -39,6 +41,8 @@ export function LaunchSection({
             ? launcherContent.launch_button_text.launching
             : addresses
             ? launcherContent.launch_button_text.launched
+            : contractType === "rum"
+            ? launcherContent.launch_button_text.default_rum
             : launcherContent.launch_button_text.default}
         </BaseButton>
       </section>

@@ -4,6 +4,10 @@ import {
   predictUserMapAddress,
 } from "./userMap";
 import {
+  generateInstantiateRumMessage,
+  predictRumAddress,
+} from "./rum";
+import {
   generateInstantiateTreasuryMessage,
   predictTreasuryAddress,
 } from "./treasury";
@@ -13,9 +17,13 @@ import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 export async function assembleTransaction({
   senderAddress,
   saltString,
+  contractType = "usermap",
+  claimKey,
 }: {
   senderAddress: string;
   saltString: string;
+  contractType?: "usermap" | "rum";
+  claimKey?: string;
 }) {
   const messages: EncodeObject[] = [];
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
@@ -26,19 +34,37 @@ export async function assembleTransaction({
     throw new Error("Missing environment variables");
   }
 
-  const appAddress = predictUserMapAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
+  if (contractType === "rum" && !claimKey) {
+    throw new Error("Claim key is required for RUM contract");
+  }
 
-  const userMapMessage = await generateInstantiateUserMapMessage(
-    senderAddress,
-    saltString,
-    USER_MAP_CODE_ID
-  );
+  let appAddress: string;
+  let appMessage: EncodeObject;
+
+  if (contractType === "rum") {
+    appAddress = predictRumAddress(senderAddress, saltString);
+    appMessage = await generateInstantiateRumMessage(
+      senderAddress,
+      saltString,
+      claimKey!
+    );
+  } else {
+    appAddress = predictUserMapAddress(senderAddress, saltString);
+    appMessage = await generateInstantiateUserMapMessage(
+      senderAddress,
+      saltString,
+      USER_MAP_CODE_ID
+    );
+  }
+
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString, contractType);
+
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
     saltString,
     appAddress,
-    TREASURY_CODE_ID
+    TREASURY_CODE_ID,
+    contractType
   );
   const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
     senderAddress,
@@ -46,7 +72,7 @@ export async function assembleTransaction({
     FAUCET_ADDRESS
   );
 
-  messages.push(userMapMessage, treasuryMessage, requestFaucetTokensMessage);
+  messages.push(appMessage, treasuryMessage, requestFaucetTokensMessage);
 
   return { messages, appAddress, treasuryAddress };
 }

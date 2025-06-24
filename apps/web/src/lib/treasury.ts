@@ -10,9 +10,12 @@ import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export function predictTreasuryAddress(
   senderAddress: string,
-  saltString: string
+  saltString: string,
+  contractType: "usermap" | "rum" = "usermap"
 ) {
-  const salt = new TextEncoder().encode(saltString);
+  // Use different salt for RUM treasury to avoid collision
+  const treasurySalt = contractType === "rum" ? `${saltString}-rum` : saltString;
+  const salt = new TextEncoder().encode(treasurySalt);
 
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
@@ -26,15 +29,21 @@ export function predictTreasuryAddress(
 export function generateTreasuryInitMsg({
   adminAddress,
   userMapAddress,
+  contractType = "usermap",
 }: {
   adminAddress: string;
   userMapAddress: string;
+  contractType?: "usermap" | "rum";
 }) {
   const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
     contractAddress: userMapAddress,
     maxAmount: "2500",
     denom: "uxion",
   });
+
+  const contractDescription = contractType === "rum" 
+    ? "Reclaim User Map (RUM) Contract" 
+    : "User Map Contract";
 
   const treasuryInitMsg = {
     admin: adminAddress,
@@ -48,7 +57,7 @@ export function generateTreasuryInitMsg({
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
     grant_configs: [
       {
-        description: "Allow execution of the User Map Contract",
+        description: `Allow execution of the ${contractDescription}`,
         optional: false,
         authorization: {
           type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
@@ -58,7 +67,7 @@ export function generateTreasuryInitMsg({
     ],
     fee_config: {
       description:
-        "This pays fees for executing messages on the User Map contract.",
+        `This pays fees for executing messages on the ${contractDescription}.`,
       allowance: {
         type_url: "/cosmos.feegrant.v1beta1.PeriodicAllowance",
         value: STATIC_PERIODIC_ALLOWANCE_BASE64,
@@ -73,15 +82,19 @@ export async function generateInstantiateTreasuryMessage(
   senderAddress: string,
   saltString: string,
   userMapAddress: string,
-  treasuryCodeId: number
+  treasuryCodeId: number,
+  contractType?: "usermap" | "rum"
 ) {
-  const salt = new TextEncoder().encode(saltString);
+  // Use different salt for RUM treasury to avoid collision
+  const treasurySalt = contractType === "rum" ? `${saltString}-rum` : saltString;
+  const salt = new TextEncoder().encode(treasurySalt);
 
-  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString, contractType);
 
   const treasuryInitMsg = generateTreasuryInitMsg({
     adminAddress: treasuryAddress,
     userMapAddress,
+    contractType,
   });
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({

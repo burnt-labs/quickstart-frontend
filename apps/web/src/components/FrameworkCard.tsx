@@ -24,7 +24,9 @@ export function FrameworkCard({
       )}
     >
       <div className="flex items-center gap-3 mb-2">
-        <span className="text-lg font-medium text-gray-100">{name}</span>
+        <span className="text-lg font-medium text-gray-100">
+          {name === "rum" ? "RUM" : name === "webapp" ? "Web App" : "Mobile"}
+        </span>
       </div>
       <p className="text-sm text-gray-400 mb-3">{description}</p>
       <a

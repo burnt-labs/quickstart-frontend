@@ -159,6 +159,15 @@ export default {
       salt: saltEncoded,
     });
 
+    // Predict RUM address if RUM checksum is available
+    const rumAddress = INSTANTIATE_CHECKSUMS.rum
+      ? predictInstantiate2Address({
+          senderAddress: params.user_address,
+          checksum: INSTANTIATE_CHECKSUMS.rum,
+          salt: saltEncoded,
+        })
+      : undefined;
+
     // Skip verification if verify=false in the query parameters
     if (config.verify) {
       const appExists = await verifyContractExists({
@@ -181,6 +190,7 @@ export default {
         {
           appAddress,
           treasuryAddress,
+          rumAddress,
         },
         config.template,
         import.meta.env.VITE_RPC_URL ||
@@ -189,7 +199,7 @@ export default {
       );
 
       if (config.values_only) {
-        return Response.json({ appAddress, treasuryAddress });
+        return Response.json({ appAddress, treasuryAddress, rumAddress });
       }
 
       const headers: Record<string, string> = {

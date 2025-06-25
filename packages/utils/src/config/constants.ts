@@ -39,6 +39,7 @@ export const INSTANTIATE_CHECKSUMS = VERSIONS[CURRENT_VERSION].checksums;
 export enum FRONTEND_TEMPLATES {
   WEBAPP = "webapp",
   MOBILE = "mobile",
+  RUM = "rum",
 }
 
 export type FrontendTemplate =

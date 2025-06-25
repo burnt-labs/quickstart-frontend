@@ -11,6 +11,8 @@
   "webapp_template_url": "https://github.com/burnt-labs/xion-user-map-json-store-frontend",
   "mobile_description": "A mobile frontend for interacting with the JSON Store smart contract on the XION blockchain.",
   "mobile_template_url": "https://github.com/burnt-labs/abstraxion-expo-demo",
+  "rum_description": "A RUM (Reclaim User Map) mobile frontend for proof-based user verification on the XION blockchain.",
+  "rum_template_url": "https://github.com/burnt-labs/abstraxion-expo-demo",
   "copypaste_box_default_text": "Once you've launched your contract, copy and paste the following into your .env.local file",
   "launch_button_text": {
     "default": "Launch User Map & Fund Treasury",

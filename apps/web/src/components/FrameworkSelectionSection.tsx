@@ -35,6 +35,14 @@ export function FrameworkSelectionSection({
             onClick={() => onTemplateChange(FRONTEND_TEMPLATES.MOBILE)}
             templateUrl={launcherContent.mobile_template_url}
           />
+
+          <FrameworkCard
+            name={FRONTEND_TEMPLATES.RUM}
+            description={launcherContent.rum_description}
+            selected={FRONTEND_TEMPLATES.RUM === frontendTemplate}
+            onClick={() => onTemplateChange(FRONTEND_TEMPLATES.RUM)}
+            templateUrl={launcherContent.rum_template_url}
+          />
         </div>
       </section>
     </article>

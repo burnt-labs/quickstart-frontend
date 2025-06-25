@@ -39,6 +39,7 @@ export default function Launcher() {
   const [deployedAddresses, setDeployedAddresses] = useState<{
     appAddress: string;
     treasuryAddress: string;
+    rumAddress?: string;
   } | null>(null);
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
@@ -64,6 +65,7 @@ export default function Launcher() {
       const newAddresses = {
         appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
+        rumAddress: data.rumAddress,
       };
       // Set deployed addresses immediately
       setDeployedAddresses(newAddresses);

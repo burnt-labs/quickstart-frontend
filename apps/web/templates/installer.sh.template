@@ -15,7 +15,9 @@ REPO_NAME="{{repoName}}"
 echo -e "${BLUE}"
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║                                                            ║"
-if [ "{{template}}" = "mobile" ]; then
+if [ "{{template}}" = "rum" ]; then
+  echo "║             XION RUM App Installer                         ║"
+elif [ "{{template}}" = "mobile" ]; then
   echo "║             XION Mobile App Installer                      ║"
 else
   echo "║             XION User Map Web App Installer                ║"
@@ -108,13 +110,25 @@ fi
 # Navigate to the repository
 cd "$REPO_NAME"
 
+# For RUM template, checkout the impl-reclaim branch
+if [ "{{template}}" = "rum" ]; then
+  echo -e "${BLUE}Checking out impl-reclaim branch for RUM template...${NC}"
+  git checkout impl-reclaim
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to checkout impl-reclaim branch.${NC}"
+    echo -e "${YELLOW}This branch may not exist yet. Continuing with default branch...${NC}"
+  else
+    echo -e "${GREEN}✓ Successfully checked out impl-reclaim branch${NC}"
+  fi
+fi
+
 # Create .env.local file
 echo -e "\n${BLUE}Creating .env.local file...${NC}"
 
 # Get user address from the wallet
 if command_exists curl; then
   # Try to fetch environment values from the server
-  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
+  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=false"
 
   if [ -n "$USER_ADDRESS" ]; then
     ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
@@ -139,6 +153,72 @@ fi
 
 echo -e "${GREEN}✓ Created .env.local file${NC}"
 
+# For RUM template, interactively ask for Reclaim Protocol credentials
+if [ "{{template}}" = "rum" ]; then
+  echo -e "\n${BLUE}════════════════════════════════════════════════════════════${NC}"
+  echo -e "${BLUE}           Reclaim Protocol Configuration Setup${NC}"
+  echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
+  echo -e "${YELLOW}To use RUM contracts, you need Reclaim Protocol credentials.${NC}"
+  echo -e "${YELLOW}Visit https://dev.reclaimprotocol.org to create an account.${NC}"
+  echo -e "${YELLOW}You'll need to add a 'Twitter User Profile' provider.${NC}"
+  echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}\n"
+
+  # Function to trim whitespace
+  trim() {
+    local var="$1"
+    # Remove leading whitespace
+    var="${var#"${var%%[![:space:]]*}"}"
+    # Remove trailing whitespace
+    var="${var%"${var##*[![:space:]]}"}"
+    echo "$var"
+  }
+
+  # Function to update .env.local with a value
+  update_env_value() {
+    local key=$1
+    local value=$2
+    if [ -z "$value" ]; then
+      return
+    fi
+    # Use sed to replace the placeholder value
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS
+      sed -i '' "s|${key}=\"<[^\"]*>\"|${key}=\"${value}\"|g" .env.local
+    else
+      # Linux
+      sed -i "s|${key}=\"<[^\"]*>\"|${key}=\"${value}\"|g" .env.local
+    fi
+  }
+
+  # Ask for Reclaim App ID
+  echo -e "${BLUE}Enter your Reclaim App ID (starts with 0x):${NC}"
+  read -p "App ID (press Enter to skip): " RECLAIM_APP_ID
+  RECLAIM_APP_ID=$(trim "$RECLAIM_APP_ID")
+  update_env_value "EXPO_PUBLIC_RECLAIM_APP_ID" "$RECLAIM_APP_ID"
+
+  # Ask for Reclaim App Secret
+  echo -e "\n${BLUE}Enter your Reclaim App Secret (starts with 0x):${NC}"
+  echo -e "${YELLOW}⚠️  WARNING: This will be stored in plain text in .env.local${NC}"
+  echo -e "${YELLOW}   Never commit this file to version control!${NC}"
+  read -p "App Secret (press Enter to skip): " RECLAIM_APP_SECRET
+  RECLAIM_APP_SECRET=$(trim "$RECLAIM_APP_SECRET")
+  update_env_value "EXPO_PUBLIC_RECLAIM_APP_SECRET" "$RECLAIM_APP_SECRET"
+
+  # Ask for Reclaim Provider ID
+  echo -e "\n${BLUE}Enter your Reclaim Provider ID (UUID format):${NC}"
+  read -p "Provider ID (press Enter to skip): " RECLAIM_PROVIDER_ID
+  RECLAIM_PROVIDER_ID=$(trim "$RECLAIM_PROVIDER_ID")
+  update_env_value "EXPO_PUBLIC_RECLAIM_PROVIDER_ID" "$RECLAIM_PROVIDER_ID"
+
+  echo -e "\n${GREEN}✓ Reclaim Protocol configuration updated${NC}"
+  
+  # Check if any values were provided
+  if [ -z "$RECLAIM_APP_ID" ] && [ -z "$RECLAIM_PROVIDER_ID" ] && [ -z "$RECLAIM_APP_SECRET" ]; then
+    echo -e "${YELLOW}⚠️  No Reclaim credentials were provided.${NC}"
+    echo -e "${YELLOW}   You'll need to update .env.local manually before the app will work.${NC}"
+  fi
+fi
+
 # Install dependencies
 echo -e "\n${BLUE}Installing dependencies...${NC}"
 npm install
@@ -152,15 +232,19 @@ echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
 # Success message
 echo -e "\n${GREEN}✅ Setup completed successfully!${NC}"
 
-if [ "{{template}}" = "mobile" ]; then
+if [ "{{template}}" = "mobile" ] || [ "{{template}}" = "rum" ]; then
   echo -e "${BLUE}Available commands for the mobile app:${NC}"
   echo -e "  cd $REPO_NAME"
   echo -e "  npm run start     # Start the Expo development server"
   echo -e "  npm run android   # Run on Android"
   echo -e "  npm run ios       # Run on iOS"
-  echo -e "  npm run web       # Run on web browser"
   echo -e "  npm run test      # Run tests"
   echo -e "  npm run lint      # Run linter"
+  
+  if [ "{{template}}" = "rum" ]; then
+    echo -e "\n${YELLOW}⚠️  Important: Remember to update your Reclaim Protocol credentials in .env.local${NC}"
+    echo -e "${YELLOW}   Visit https://dev.reclaimprotocol.org to get your App ID, Provider ID, and App Secret${NC}"
+  fi
 else
   echo -e "${BLUE}To start the development server:${NC}"
   echo -e "  cd $REPO_NAME"

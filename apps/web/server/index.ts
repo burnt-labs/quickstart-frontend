@@ -107,15 +107,21 @@ export default {
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
 
       // Set repository URL based on template
-      const repoUrl =
-        template === FRONTEND_TEMPLATES.MOBILE
-          ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
-          : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
-
-      const repoName =
-        template === FRONTEND_TEMPLATES.MOBILE
-          ? "xion-mobile-quickstart"
-          : "xion-web-quickstart";
+      let repoUrl: string;
+      let repoName: string;
+      
+      if (template === FRONTEND_TEMPLATES.RUM) {
+        // RUM uses the mobile template repository
+        repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";
+        repoName = "xion-rum-quickstart";
+      } else if (template === FRONTEND_TEMPLATES.MOBILE) {
+        repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";
+        repoName = "xion-mobile-quickstart";
+      } else {
+        // Default to webapp
+        repoUrl = "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
+        repoName = "xion-web-quickstart";
+      }
 
       // Use the imported template
       let templateContent = installerTemplate;

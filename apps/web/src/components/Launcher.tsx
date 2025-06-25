@@ -36,9 +36,16 @@ export default function Launcher() {
   const [textboxValue, setTextboxValue] = useState(
     launcherContent.copypaste_box_default_text
   );
+  const [deployedAddresses, setDeployedAddresses] = useState<{
+    appAddress: string;
+    treasuryAddress: string;
+  } | null>(null);
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const { data: addresses } = useExistingContracts(account?.bech32Address);
+  const { data: existingAddresses } = useExistingContracts(account?.bech32Address);
+  
+  // Use either existing addresses or newly deployed addresses
+  const addresses = deployedAddresses || existingAddresses;
 
   useEffect(() => {
     if (addresses) {
@@ -58,8 +65,10 @@ export default function Launcher() {
         appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
       };
+      // Set deployed addresses immediately
+      setDeployedAddresses(newAddresses);
       queryClient.invalidateQueries({
-        queryKey: [EXISTING_CONTRACTS_QUERY_KEY],
+        queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
       });
       setTextboxValue(
         formatEnvText(newAddresses, frontendTemplate, RPC_URL, REST_URL)

@@ -4,6 +4,10 @@ import {
   predictUserMapAddress,
 } from "./userMap";
 import {
+  generateInstantiateRumMessage,
+  predictRumAddress,
+} from "./rum";
+import {
   generateInstantiateTreasuryMessage,
   predictTreasuryAddress,
 } from "./treasury";
@@ -20,24 +24,35 @@ export async function assembleTransaction({
   const messages: EncodeObject[] = [];
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
   const USER_MAP_CODE_ID = import.meta.env.VITE_USER_MAP_CODE_ID;
+  const RUM_CODE_ID = import.meta.env.VITE_RUM_CODE_ID;
   const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_ADDRESS;
 
-  if (!TREASURY_CODE_ID || !USER_MAP_CODE_ID || !FAUCET_ADDRESS) {
+  if (!TREASURY_CODE_ID || !USER_MAP_CODE_ID || !RUM_CODE_ID || !FAUCET_ADDRESS) {
     throw new Error("Missing environment variables");
   }
 
   const appAddress = predictUserMapAddress(senderAddress, saltString);
+  const rumAddress = predictRumAddress(senderAddress, saltString);
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
+
+  // Generate claim key for RUM contract (using saltString as base)
+  const claimKey = `claim_${saltString}`;
 
   const userMapMessage = await generateInstantiateUserMapMessage(
     senderAddress,
     saltString,
     USER_MAP_CODE_ID
   );
+  const rumMessage = await generateInstantiateRumMessage(
+    senderAddress,
+    saltString,
+    RUM_CODE_ID,
+    claimKey
+  );
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
     saltString,
-    appAddress,
+    [appAddress, rumAddress],
     TREASURY_CODE_ID
   );
   const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
@@ -46,9 +61,9 @@ export async function assembleTransaction({
     FAUCET_ADDRESS
   );
 
-  messages.push(userMapMessage, treasuryMessage, requestFaucetTokensMessage);
+  messages.push(userMapMessage, rumMessage, treasuryMessage, requestFaucetTokensMessage);
 
-  return { messages, appAddress, treasuryAddress };
+  return { messages, appAddress, rumAddress, treasuryAddress };
 }
 
 export async function executeBatchTransaction({

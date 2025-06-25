@@ -5,7 +5,7 @@ export async function fetchExistingContracts({
   address: string;
   baseUrl: string;
 }) {
-  const url = `${baseUrl}/env/?user_address=${address}&values_only=true`;
+  const url = `${baseUrl}/env/?user_address=${address}&values_only=true&verify=false`;
   const response = await fetch(url);
   if (response.status === 200) {
     const data = await response.json();

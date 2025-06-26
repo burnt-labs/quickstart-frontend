@@ -9,7 +9,6 @@ import {
 } from "./treasury";
 import { generateRequestFaucetTokensMessage } from "./faucet";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
-import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export async function assembleRumTransaction({
   senderAddress,
@@ -31,15 +30,6 @@ export async function assembleRumTransaction({
 
   const rumAddress = predictRumAddress(senderAddress, saltString);
   const treasuryAddress = predictTreasuryAddress(senderAddress, rumAddress);
-  
-  console.log('RUM Transaction Debug:', {
-    senderAddress,
-    saltString,
-    rumAddress,
-    treasuryAddress,
-    treasurySalt: rumAddress,
-    treasuryChecksum: INSTANTIATE_CHECKSUMS.treasury,
-  });
 
   const rumMessage = await generateInstantiateRumMessage(
     senderAddress,

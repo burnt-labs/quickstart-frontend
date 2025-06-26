@@ -14,22 +14,11 @@ export function predictTreasuryAddress(
 ) {
   const salt = new TextEncoder().encode(saltString);
 
-  console.log('predictTreasuryAddress Debug:', {
-    senderAddress,
-    saltString,
-    saltBytes: Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join(''),
-    saltLength: salt.length,
-    checksum: INSTANTIATE_CHECKSUMS.treasury,
-  });
-
   const predictedTreasuryAddress = predictInstantiate2Address({
     senderAddress,
     checksum: INSTANTIATE_CHECKSUMS.treasury,
     salt,
   });
-
-  console.log('Predicted treasury address:', predictedTreasuryAddress);
-  console.log('Treasury prediction complete for salt:', saltString);
 
   return predictedTreasuryAddress;
 }

@@ -194,7 +194,7 @@ export default function Launcher() {
     try {
       if (contractType === CONTRACT_TYPES.RUM) {
         // Generate claim key for RUM contract
-        const claimKey = `claim_${INSTANTIATE_SALT}`;
+        const claimKey = `followers_count`;
         await launchRumTransaction({
           senderAddress: account.bech32Address,
           saltString: INSTANTIATE_SALT,

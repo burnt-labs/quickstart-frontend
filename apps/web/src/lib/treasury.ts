@@ -26,9 +26,13 @@ export function predictTreasuryAddress(
 export function generateTreasuryInitMsg({
   adminAddress,
   contractAddresses,
+  description = "Allow execution of UserMap and RUM contracts",
+  feeDescription = "This pays fees for executing messages on the UserMap and RUM contracts.",
 }: {
   adminAddress: string;
   contractAddresses: string[];
+  description?: string;
+  feeDescription?: string;
 }) {
   const contractAuthzBase64 = encodeMultiContractExecutionAuthorizationBase64(
     contractAddresses,
@@ -50,7 +54,7 @@ export function generateTreasuryInitMsg({
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
     grant_configs: [
       {
-        description: "Allow execution of UserMap and RUM contracts",
+        description: description,
         optional: false,
         authorization: {
           type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
@@ -59,8 +63,7 @@ export function generateTreasuryInitMsg({
       },
     ],
     fee_config: {
-      description:
-        "This pays fees for executing messages on the UserMap and RUM contracts.",
+      description: feeDescription,
       allowance: {
         type_url: "/cosmos.feegrant.v1beta1.PeriodicAllowance",
         value: STATIC_PERIODIC_ALLOWANCE_BASE64,
@@ -75,7 +78,9 @@ export async function generateInstantiateTreasuryMessage(
   senderAddress: string,
   saltString: string,
   contractAddresses: string[],
-  treasuryCodeId: number
+  treasuryCodeId: number,
+  description?: string,
+  feeDescription?: string
 ) {
   const salt = new TextEncoder().encode(saltString);
 
@@ -84,6 +89,8 @@ export async function generateInstantiateTreasuryMessage(
   const treasuryInitMsg = generateTreasuryInitMsg({
     adminAddress: treasuryAddress,
     contractAddresses,
+    description,
+    feeDescription,
   });
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({

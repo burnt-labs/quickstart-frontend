@@ -5,10 +5,12 @@ import {
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
 import { PageTitle, MutedText } from "./ui/Typography";
-import { useLaunchTransaction } from "../hooks/useLaunchTransaction";
+import { useLaunchUserMapTransaction } from "../hooks/useLaunchUserMapTransaction";
+import { useLaunchRumTransaction } from "../hooks/useLaunchRumTransaction";
 import {
   INSTANTIATE_SALT,
   DEFAULT_FRONTEND_TEMPLATE,
+  FRONTEND_TEMPLATES,
   type FrontendTemplate,
 } from "../config/constants";
 import { formatEnvText } from "@burnt-labs/quick-start-utils";
@@ -18,8 +20,10 @@ import {
 } from "../hooks/useExistingContracts";
 import launcherContent from "../content/launcher.json";
 import { LaunchSection } from "./LaunchSection";
+import { ContractSelectionSection } from "./ContractSelectionSection";
 import { FrameworkSelectionSection } from "./FrameworkSelectionSection";
 import { InstallationSection } from "./InstallationSection";
+import { CONTRACT_TYPES, DEFAULT_CONTRACT_TYPE, type ContractType } from "../config/contractTypes";
 
 const RPC_URL =
   import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
@@ -30,50 +34,112 @@ export default function Launcher() {
   const queryClient = useQueryClient();
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [contractType, setContractType] = useState<ContractType>(DEFAULT_CONTRACT_TYPE);
   const [frontendTemplate, setFrontendTemplate] = useState<FrontendTemplate>(
     DEFAULT_FRONTEND_TEMPLATE
   );
   const [textboxValue, setTextboxValue] = useState(
     launcherContent.copypaste_box_default_text
   );
-  const [deployedAddresses, setDeployedAddresses] = useState<{
-    appAddress: string;
-    treasuryAddress: string;
-    rumAddress?: string;
-  } | null>(null);
+  const [deployedContracts, setDeployedContracts] = useState<{
+    [CONTRACT_TYPES.USER_MAP]?: {
+      appAddress: string;
+      treasuryAddress: string;
+    };
+    [CONTRACT_TYPES.RUM]?: {
+      rumAddress: string;
+      treasuryAddress: string;
+    };
+  }>({});
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
   const { data: existingAddresses } = useExistingContracts(account?.bech32Address);
   
-  // Use either existing addresses or newly deployed addresses
-  const addresses = deployedAddresses || existingAddresses;
+  // Clear success/error state when contract type changes
+  useEffect(() => {
+    setTransactionHash("");
+    setErrorMessage("");
+  }, [contractType]);
+
+  // Check for existing contracts on startup
+  useEffect(() => {
+    if (existingAddresses) {
+      const updates: typeof deployedContracts = {};
+      
+      // Check for UserMap deployment
+      // If UserMap exists, show it even if we can't find its treasury
+      if (existingAddresses.appAddress) {
+        updates[CONTRACT_TYPES.USER_MAP] = {
+          appAddress: existingAddresses.appAddress,
+          treasuryAddress: existingAddresses.userMapTreasuryAddress || 
+                          existingAddresses.treasuryAddress || 
+                          "", // Empty string if no treasury found
+        };
+      }
+      
+      // Check for RUM deployment  
+      // If RUM exists, show it even if we can't find its treasury
+      if (existingAddresses.rumAddress) {
+        updates[CONTRACT_TYPES.RUM] = {
+          rumAddress: existingAddresses.rumAddress,
+          treasuryAddress: existingAddresses.rumTreasuryAddress || 
+                          existingAddresses.treasuryAddress || 
+                          "", // Empty string if no treasury found
+        };
+      }
+      
+      // Update state with any found contracts
+      if (Object.keys(updates).length > 0) {
+        setDeployedContracts(updates);
+      }
+    }
+  }, [existingAddresses]);
+
+  // Get current contract type's deployed addresses
+  const currentDeployment = contractType === CONTRACT_TYPES.USER_MAP 
+    ? deployedContracts[CONTRACT_TYPES.USER_MAP]
+    : deployedContracts[CONTRACT_TYPES.RUM];
+  
+  // Format addresses for display
+  const addresses = currentDeployment ? {
+    appAddress: contractType === CONTRACT_TYPES.USER_MAP 
+      ? (currentDeployment as any).appAddress 
+      : "",
+    treasuryAddress: currentDeployment.treasuryAddress,
+    rumAddress: contractType === CONTRACT_TYPES.RUM 
+      ? (currentDeployment as any).rumAddress 
+      : undefined,
+  } : null;
 
   useEffect(() => {
     if (addresses) {
+      const template = contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate;
       setTextboxValue(
-        formatEnvText(addresses, frontendTemplate, RPC_URL, REST_URL)
+        formatEnvText(addresses, template, RPC_URL, REST_URL)
       );
     }
-  }, [addresses, frontendTemplate]);
+  }, [addresses, frontendTemplate, contractType]);
 
   const {
-    mutateAsync: launchTransaction,
-    isPending,
-    isSuccess,
-  } = useLaunchTransaction({
+    mutateAsync: launchUserMapTransaction,
+    isPending: isUserMapPending,
+    isSuccess: isUserMapSuccess,
+  } = useLaunchUserMapTransaction({
     onSuccess: (data) => {
       const newAddresses = {
         appAddress: data.appAddress,
         treasuryAddress: data.treasuryAddress,
-        rumAddress: data.rumAddress,
       };
-      // Set deployed addresses immediately
-      setDeployedAddresses(newAddresses);
+      // Store deployment for USER_MAP type
+      setDeployedContracts(prev => ({
+        ...prev,
+        [CONTRACT_TYPES.USER_MAP]: newAddresses,
+      }));
       queryClient.invalidateQueries({
         queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
       });
       setTextboxValue(
-        formatEnvText(newAddresses, frontendTemplate, RPC_URL, REST_URL)
+        formatEnvText(newAddresses, contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate, RPC_URL, REST_URL)
       );
       setTransactionHash(data.tx.transactionHash);
       console.log("Transaction result:", data.tx);
@@ -84,15 +150,65 @@ export default function Launcher() {
     },
   });
 
+  const {
+    mutateAsync: launchRumTransaction,
+    isPending: isRumPending,
+    isSuccess: isRumSuccess,
+  } = useLaunchRumTransaction({
+    onSuccess: (data) => {
+      const newAddresses = {
+        rumAddress: data.rumAddress,
+        treasuryAddress: data.treasuryAddress,
+      };
+      // Store deployment for RUM type
+      setDeployedContracts(prev => ({
+        ...prev,
+        [CONTRACT_TYPES.RUM]: newAddresses,
+      }));
+      queryClient.invalidateQueries({
+        queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
+      });
+      const formattedAddresses = {
+        rumAddress: data.rumAddress,
+        treasuryAddress: data.treasuryAddress,
+        appAddress: "", // RUM doesn't have appAddress
+      };
+      setTextboxValue(
+        formatEnvText(formattedAddresses, contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate, RPC_URL, REST_URL)
+      );
+      setTransactionHash(data.tx.transactionHash);
+      console.log("Transaction result:", data.tx);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+      console.error("Transaction failed:", error);
+    },
+  });
+
+  const isPending = contractType === CONTRACT_TYPES.RUM ? isRumPending : isUserMapPending;
+  const isSuccess = contractType === CONTRACT_TYPES.RUM ? isRumSuccess : isUserMapSuccess;
+
   const handleLaunchClick = async () => {
     if (!client || !account) return;
 
     try {
-      await launchTransaction({
-        senderAddress: account.bech32Address,
-        saltString: INSTANTIATE_SALT,
-        client,
-      });
+      if (contractType === CONTRACT_TYPES.RUM) {
+        // Generate claim key for RUM contract
+        const claimKey = `claim_${INSTANTIATE_SALT}`;
+        await launchRumTransaction({
+          senderAddress: account.bech32Address,
+          saltString: INSTANTIATE_SALT,
+          client,
+          claimKey,
+        });
+      } else {
+        // Launch UserMap contract
+        await launchUserMapTransaction({
+          senderAddress: account.bech32Address,
+          saltString: INSTANTIATE_SALT,
+          client,
+        });
+      }
     } catch (error) {
       console.error("Transaction failed:", error);
     }
@@ -105,6 +221,11 @@ export default function Launcher() {
         <MutedText>{launcherContent.page_description}</MutedText>
       </header>
 
+      <ContractSelectionSection
+        contractType={contractType}
+        onContractTypeChange={setContractType}
+      />
+
       <LaunchSection
         onLaunch={handleLaunchClick}
         isPending={isPending}
@@ -113,17 +234,21 @@ export default function Launcher() {
         transactionHash={transactionHash}
         errorMessage={errorMessage}
         onErrorClose={() => setErrorMessage("")}
+        contractType={contractType}
+        isDeployed={!!currentDeployment}
       />
 
       {addresses && (
         <>
-          <FrameworkSelectionSection
-            frontendTemplate={frontendTemplate}
-            onTemplateChange={setFrontendTemplate}
-          />
+          {contractType === CONTRACT_TYPES.USER_MAP && (
+            <FrameworkSelectionSection
+              frontendTemplate={frontendTemplate}
+              onTemplateChange={setFrontendTemplate}
+            />
+          )}
 
           <InstallationSection
-            frontendTemplate={frontendTemplate}
+            frontendTemplate={contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate}
             textboxValue={textboxValue}
             account={account}
           />

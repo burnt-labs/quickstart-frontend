@@ -20,14 +20,13 @@ NEXT_PUBLIC_REST_URL="${restUrl}"`;
   }
 
   if (template === FRONTEND_TEMPLATES.RUM) {
-    // RUM contracts use mobile template format but with RUM-specific addresses
-    return `EXPO_PUBLIC_USER_MAP_CONTRACT_ADDRESS="${addresses.appAddress}"
-EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS="${addresses.treasuryAddress}"
+    // RUM contracts have their own deployment without UserMap
+    return `EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS="${addresses.treasuryAddress}"
 EXPO_PUBLIC_RPC_ENDPOINT="${rpcUrl}"
 EXPO_PUBLIC_REST_ENDPOINT="${restUrl}"
 EXPO_PUBLIC_CODE_ID="1289"
 EXPO_PUBLIC_VERIFICATION_CONTRACT_ADDRESS="xion1qf8jtznwf0tykpg7e65gwafwp47rwxl4x2g2kldvv357s6frcjlsh2m24e"
-EXPO_PUBLIC_RUM_CONTRACT_ADDRESS="${addresses.rumAddress || addresses.appAddress}"
+EXPO_PUBLIC_RUM_CONTRACT_ADDRESS="${addresses.rumAddress}"
 
 # Reclaim Protocol Configuration
 # You need to add these values from your Reclaim dashboard (https://dev.reclaimprotocol.org)

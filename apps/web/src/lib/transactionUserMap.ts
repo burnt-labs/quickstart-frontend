@@ -9,6 +9,7 @@ import {
 } from "./treasury";
 import { generateRequestFaucetTokensMessage } from "./faucet";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import { INSTANTIATE_CHECKSUMS } from "../config/constants";
 
 export async function assembleUserMapTransaction({
   senderAddress,
@@ -28,6 +29,15 @@ export async function assembleUserMapTransaction({
 
   const appAddress = predictUserMapAddress(senderAddress, saltString);
   const treasuryAddress = predictTreasuryAddress(senderAddress, appAddress);
+  
+  console.log('UserMap Transaction Debug:', {
+    senderAddress,
+    saltString,
+    appAddress,
+    treasuryAddress,
+    treasurySalt: appAddress,
+    treasuryChecksum: INSTANTIATE_CHECKSUMS.treasury,
+  });
 
   const userMapMessage = await generateInstantiateUserMapMessage(
     senderAddress,

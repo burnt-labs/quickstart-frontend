@@ -80,7 +80,7 @@ export async function generateInstantiateTreasuryMessage(
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const treasuryInitMsg = generateTreasuryInitMsg({
-    adminAddress: treasuryAddress,
+    adminAddress: senderAddress,
     userMapAddress,
   });
 

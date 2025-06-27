@@ -111,8 +111,8 @@ export default {
       let repoName: string;
       
       if (template === FRONTEND_TEMPLATES.RUM) {
-        // RUM uses the mobile template repository
-        repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";
+        // RUM uses the abstraxion-reclaim-demo repository
+        repoUrl = "https://github.com/burnt-labs/abstraxion-reclaim-demo.git";
         repoName = "xion-rum-quickstart";
       } else if (template === FRONTEND_TEMPLATES.MOBILE) {
         repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";

@@ -128,7 +128,7 @@ echo -e "\n${BLUE}Creating .env.local file...${NC}"
 # Get user address from the wallet
 if command_exists curl; then
   # Try to fetch environment values from the server
-  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=false"
+  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
 
   if [ -n "$USER_ADDRESS" ]; then
     ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"

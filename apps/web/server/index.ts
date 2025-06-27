@@ -231,10 +231,19 @@ export default {
     }
 
     if (url.pathname.startsWith("/env/")) {
+      // Use the correct treasury address based on the template
+      let effectiveTreasuryAddress = treasuryAddress;
+      
+      if (config.template === FRONTEND_TEMPLATES.RUM && rumTreasuryAddress) {
+        effectiveTreasuryAddress = rumTreasuryAddress;
+      } else if ((config.template === FRONTEND_TEMPLATES.WEBAPP || config.template === FRONTEND_TEMPLATES.MOBILE) && userMapTreasuryAddress) {
+        effectiveTreasuryAddress = userMapTreasuryAddress;
+      }
+      
       const envText = formatEnvText(
         {
           appAddress,
-          treasuryAddress,
+          treasuryAddress: effectiveTreasuryAddress,
           rumAddress,
         },
         config.template,

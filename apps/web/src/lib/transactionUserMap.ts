@@ -27,7 +27,14 @@ export async function assembleUserMapTransaction({
   }
 
   const appAddress = predictUserMapAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, appAddress);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, `${saltString}-usermap-treasury`);
+  
+  console.log('Frontend calculating addresses:', {
+    senderAddress,
+    saltString,
+    appAddress,
+    treasuryAddress,
+  });
 
   const userMapMessage = await generateInstantiateUserMapMessage(
     senderAddress,
@@ -36,7 +43,7 @@ export async function assembleUserMapTransaction({
   );
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    appAddress,
+    `${saltString}-usermap-treasury`,
     [appAddress],
     TREASURY_CODE_ID,
     "Allow execution of UserMap contract",

@@ -29,7 +29,7 @@ export async function assembleRumTransaction({
   }
 
   const rumAddress = predictRumAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, rumAddress);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, `${saltString}-rum-treasury`);
 
   const rumMessage = await generateInstantiateRumMessage(
     senderAddress,
@@ -39,7 +39,7 @@ export async function assembleRumTransaction({
   );
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    rumAddress,
+    `${saltString}-rum-treasury`,
     [rumAddress],
     TREASURY_CODE_ID,
     "Allow execution of RUM contract",

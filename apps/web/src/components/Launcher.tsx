@@ -53,13 +53,17 @@ export default function Launcher() {
   }>({});
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const { data: existingAddresses } = useExistingContracts(account?.bech32Address);
+  const { data: existingAddresses, refetch: refetchExistingContracts } = useExistingContracts(account?.bech32Address);
   
   // Clear success/error state when contract type changes
   useEffect(() => {
     setTransactionHash("");
     setErrorMessage("");
-  }, [contractType]);
+    // Refetch existing contracts when switching contract types
+    if (account?.bech32Address) {
+      refetchExistingContracts();
+    }
+  }, [contractType, account?.bech32Address, refetchExistingContracts]);
 
   // Check for existing contracts on startup
   useEffect(() => {
@@ -72,7 +76,6 @@ export default function Launcher() {
         updates[CONTRACT_TYPES.USER_MAP] = {
           appAddress: existingAddresses.appAddress,
           treasuryAddress: existingAddresses.userMapTreasuryAddress || 
-                          existingAddresses.treasuryAddress || 
                           "", // Empty string if no treasury found
         };
       }
@@ -83,7 +86,6 @@ export default function Launcher() {
         updates[CONTRACT_TYPES.RUM] = {
           rumAddress: existingAddresses.rumAddress,
           treasuryAddress: existingAddresses.rumTreasuryAddress || 
-                          existingAddresses.treasuryAddress || 
                           "", // Empty string if no treasury found
         };
       }
@@ -135,9 +137,12 @@ export default function Launcher() {
         ...prev,
         [CONTRACT_TYPES.USER_MAP]: newAddresses,
       }));
-      queryClient.invalidateQueries({
-        queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
-      });
+      // Wait a bit for blockchain to index the new contract
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
+        });
+      }, 3000);
       setTextboxValue(
         formatEnvText(newAddresses, contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate, RPC_URL, REST_URL)
       );
@@ -165,9 +170,12 @@ export default function Launcher() {
         ...prev,
         [CONTRACT_TYPES.RUM]: newAddresses,
       }));
-      queryClient.invalidateQueries({
-        queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
-      });
+      // Wait a bit for blockchain to index the new contract
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: [EXISTING_CONTRACTS_QUERY_KEY, account?.bech32Address],
+        });
+      }, 3000);
       const formattedAddresses = {
         rumAddress: data.rumAddress,
         treasuryAddress: data.treasuryAddress,
@@ -224,6 +232,7 @@ export default function Launcher() {
       <ContractSelectionSection
         contractType={contractType}
         onContractTypeChange={setContractType}
+        disabled={isPending}
       />
 
       <LaunchSection

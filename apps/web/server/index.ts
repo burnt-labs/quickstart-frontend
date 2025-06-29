@@ -151,6 +151,8 @@ export default {
 
     const config = mergeConfigWithDefaults(params);
 
+    console.log("Config:", config);
+
     const saltEncoded = new TextEncoder().encode(config.salt);
 
     const appAddress = predictInstantiate2Address({
@@ -168,43 +170,28 @@ export default {
         })
       : undefined;
 
-    // Old treasury address (for backward compatibility)
-    const treasuryAddress = predictInstantiate2Address({
-      senderAddress: params.user_address,
-      checksum: config.treasury_checksum,
-      salt: saltEncoded,
-    });
-
-    // New treasury addresses (using contract addresses as salts)
+    // Treasury addresses for each contract type (using unique salts)
     const userMapTreasuryAddress = predictInstantiate2Address({
       senderAddress: params.user_address,
       checksum: config.treasury_checksum,
-      salt: new TextEncoder().encode(appAddress),
+      salt: new TextEncoder().encode(`${config.salt}-usermap-treasury`),
     });
 
-    const rumTreasuryAddress = rumAddress
-      ? predictInstantiate2Address({
-          senderAddress: params.user_address,
-          checksum: config.treasury_checksum,
-          salt: new TextEncoder().encode(rumAddress),
-        })
-      : undefined;
+    const rumTreasuryAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.treasury_checksum,
+      salt: new TextEncoder().encode(`${config.salt}-rum-treasury`),
+    });
 
     // Check which contracts actually exist
     let appExists = false;
-    let treasuryExists = false; // Old treasury (backward compatibility)
     let userMapTreasuryExists = false;
-    let rumExists = false;
     let rumTreasuryExists = false;
+    let rumExists = false;
 
     if (config.verify) {
       appExists = await verifyContractExists({
         address: appAddress,
-        restUrl: REST_URL,
-      });
-
-      treasuryExists = await verifyContractExists({
-        address: treasuryAddress,
         restUrl: REST_URL,
       });
 
@@ -213,33 +200,27 @@ export default {
         restUrl: REST_URL,
       });
 
+      rumTreasuryExists = await verifyContractExists({
+        address: rumTreasuryAddress,
+        restUrl: REST_URL,
+      });
+
       if (rumAddress) {
         rumExists = await verifyContractExists({
           address: rumAddress,
           restUrl: REST_URL,
         });
-
-        if (rumTreasuryAddress) {
-          rumTreasuryExists = await verifyContractExists({
-            address: rumTreasuryAddress,
-            restUrl: REST_URL,
-          });
-        }
       }
 
       // Don't fail if contracts don't exist - just report their status
     }
 
     if (url.pathname.startsWith("/env/")) {
-      // Use the correct treasury address based on the template
-      let effectiveTreasuryAddress = treasuryAddress;
-      
-      if (config.template === FRONTEND_TEMPLATES.RUM && rumTreasuryAddress) {
-        effectiveTreasuryAddress = rumTreasuryAddress;
-      } else if ((config.template === FRONTEND_TEMPLATES.WEBAPP || config.template === FRONTEND_TEMPLATES.MOBILE) && userMapTreasuryAddress) {
-        effectiveTreasuryAddress = userMapTreasuryAddress;
-      }
-      
+      // Use the correct treasury address based on template
+      const effectiveTreasuryAddress = config.template === FRONTEND_TEMPLATES.RUM 
+        ? rumTreasuryAddress 
+        : userMapTreasuryAddress;
+
       const envText = formatEnvText(
         {
           appAddress,
@@ -255,17 +236,16 @@ export default {
       if (config.values_only) {
         return Response.json({ 
           appAddress, 
-          treasuryAddress, 
-          rumAddress,
+          treasuryAddress: effectiveTreasuryAddress,
           userMapTreasuryAddress,
-          rumTreasuryAddress,
+          rumTreasuryAddress, 
+          rumAddress,
           // Include existence status when verify is true
           ...(config.verify && {
             appExists,
-            treasuryExists,
             userMapTreasuryExists,
-            rumExists,
             rumTreasuryExists,
+            rumExists,
           }),
         });
       }

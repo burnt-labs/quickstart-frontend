@@ -10,6 +10,13 @@ export function predictUserMapAddress(
 ) {
   const salt = new TextEncoder().encode(saltString);
 
+  console.log('Frontend UserMap prediction:', {
+    senderAddress,
+    saltString,
+    checksum: INSTANTIATE_CHECKSUMS.userMap,
+    salt: Array.from(salt),
+  });
+
   const predictedUserMapAddress = predictInstantiate2Address({
     senderAddress,
     checksum: INSTANTIATE_CHECKSUMS.userMap,

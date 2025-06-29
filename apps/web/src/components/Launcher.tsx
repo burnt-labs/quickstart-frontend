@@ -147,11 +147,9 @@ export default function Launcher() {
         formatEnvText(newAddresses, contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate, RPC_URL, REST_URL)
       );
       setTransactionHash(data.tx.transactionHash);
-      console.log("Transaction result:", data.tx);
     },
     onError: (error) => {
       setErrorMessage(error.message);
-      console.error("Transaction failed:", error);
     },
   });
 
@@ -185,11 +183,9 @@ export default function Launcher() {
         formatEnvText(formattedAddresses, contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate, RPC_URL, REST_URL)
       );
       setTransactionHash(data.tx.transactionHash);
-      console.log("Transaction result:", data.tx);
     },
     onError: (error) => {
       setErrorMessage(error.message);
-      console.error("Transaction failed:", error);
     },
   });
 
@@ -218,7 +214,7 @@ export default function Launcher() {
         });
       }
     } catch (error) {
-      console.error("Transaction failed:", error);
+      // Error is handled by the mutation hooks
     }
   };
 

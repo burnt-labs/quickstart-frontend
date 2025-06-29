@@ -6,13 +6,11 @@ export const EXISTING_CONTRACTS_QUERY_KEY = "existing-contracts";
 export const useExistingContracts = (address: string) => {
   return useQuery({
     queryKey: [EXISTING_CONTRACTS_QUERY_KEY, address],
-    queryFn: () => {
-      console.log('Fetching existing contracts for:', address);
-      return fetchExistingContracts({
+    queryFn: () =>
+      fetchExistingContracts({
         address,
         baseUrl: window.location.origin,
-      });
-    },
+      }),
     enabled: !!address,
     refetchOnWindowFocus: false,
     retry: 3,

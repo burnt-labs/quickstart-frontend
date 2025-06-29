@@ -151,8 +151,6 @@ export default {
 
     const config = mergeConfigWithDefaults(params);
 
-    console.log("Config:", config);
-
     const saltEncoded = new TextEncoder().encode(config.salt);
 
     const appAddress = predictInstantiate2Address({

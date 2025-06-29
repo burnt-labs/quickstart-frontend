@@ -2,35 +2,37 @@ import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import {
-  assembleTransaction,
+  assembleRumTransaction,
   executeBatchTransaction,
-} from "../lib/transaction";
+} from "../lib/transactionRum";
 
-interface LaunchTransactionParams {
+interface LaunchRumTransactionParams {
   senderAddress: string;
   saltString: string;
   client: GranteeSignerClient;
+  claimKey: string;
 }
 
-interface LaunchTransactionResult {
+interface LaunchRumTransactionResult {
   tx: DeliverTxResponse;
-  appAddress: string;
+  rumAddress: string;
   treasuryAddress: string;
 }
 
-export function useLaunchTransaction(
+export function useLaunchRumTransaction(
   options?: UseMutationOptions<
-    LaunchTransactionResult,
+    LaunchRumTransactionResult,
     Error,
-    LaunchTransactionParams
+    LaunchRumTransactionParams
   >
 ) {
-  return useMutation<LaunchTransactionResult, Error, LaunchTransactionParams>({
-    mutationFn: async ({ senderAddress, saltString, client }) => {
-      const { messages, appAddress, treasuryAddress } =
-        await assembleTransaction({
+  return useMutation<LaunchRumTransactionResult, Error, LaunchRumTransactionParams>({
+    mutationFn: async ({ senderAddress, saltString, client, claimKey }) => {
+      const { messages, rumAddress, treasuryAddress } =
+        await assembleRumTransaction({
           senderAddress,
           saltString,
+          claimKey,
         });
 
       const tx = await executeBatchTransaction({
@@ -41,7 +43,7 @@ export function useLaunchTransaction(
 
       return {
         tx,
-        appAddress,
+        rumAddress,
         treasuryAddress,
       };
     },

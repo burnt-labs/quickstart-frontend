@@ -1,4 +1,5 @@
 import { cn } from "../utils/classname-util";
+import { FRONTEND_TEMPLATES } from "../config/constants";
 
 export function FrameworkCard({
   name,
@@ -24,7 +25,9 @@ export function FrameworkCard({
       )}
     >
       <div className="flex items-center gap-3 mb-2">
-        <span className="text-lg font-medium text-gray-100">{name}</span>
+        <span className="text-lg font-medium text-gray-100">
+          {name === FRONTEND_TEMPLATES.RUM ? "RUM" : name === FRONTEND_TEMPLATES.WEBAPP ? "Web App" : "Mobile"}
+        </span>
       </div>
       <p className="text-sm text-gray-400 mb-3">{description}</p>
       <a

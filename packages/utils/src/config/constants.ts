@@ -5,6 +5,7 @@ type Version = {
   checksums: {
     userMap: string;
     treasury: string;
+    rum?: string;
   };
 };
 
@@ -25,7 +26,9 @@ export const VERSIONS: Record<string, Version> = {
       userMap:
         "9302D2D7F67A505520E78E95467D70CAA9366C7DEE2F6EE8592205A4D3B1EDD1",
       treasury:
-        "732B29E349126C2285FE3240A620BDDF914D91093325BB7968C40BD6988ACDCB",
+        "54992CD737BF824341F7EEFB1C5A81E4CEDD7565A7F196D688BAF7D3BAC49F21",
+      rum:
+        "5A591A4DF6F433728AE43896C3777D05EC9287019CB3953051A9AB52297C2B20",
     },
   },
 };
@@ -36,6 +39,7 @@ export const INSTANTIATE_CHECKSUMS = VERSIONS[CURRENT_VERSION].checksums;
 export enum FRONTEND_TEMPLATES {
   WEBAPP = "webapp",
   MOBILE = "mobile",
+  RUM = "rum",
 }
 
 export type FrontendTemplate =

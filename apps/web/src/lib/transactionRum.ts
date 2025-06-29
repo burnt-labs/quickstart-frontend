@@ -1,8 +1,8 @@
 import { EncodeObject } from "@cosmjs/proto-signing";
 import {
-  generateInstantiateUserMapMessage,
-  predictUserMapAddress,
-} from "./userMap";
+  generateInstantiateRumMessage,
+  predictRumAddress,
+} from "./rum";
 import {
   generateInstantiateTreasuryMessage,
   predictTreasuryAddress,
@@ -10,35 +10,40 @@ import {
 import { generateRequestFaucetTokensMessage } from "./faucet";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
 
-export async function assembleTransaction({
+export async function assembleRumTransaction({
   senderAddress,
   saltString,
+  claimKey,
 }: {
   senderAddress: string;
   saltString: string;
+  claimKey: string;
 }) {
   const messages: EncodeObject[] = [];
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
-  const USER_MAP_CODE_ID = import.meta.env.VITE_USER_MAP_CODE_ID;
+  const RUM_CODE_ID = import.meta.env.VITE_RUM_CODE_ID;
   const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_ADDRESS;
 
-  if (!TREASURY_CODE_ID || !USER_MAP_CODE_ID || !FAUCET_ADDRESS) {
+  if (!TREASURY_CODE_ID || !RUM_CODE_ID || !FAUCET_ADDRESS) {
     throw new Error("Missing environment variables");
   }
 
-  const appAddress = predictUserMapAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
+  const rumAddress = predictRumAddress(senderAddress, saltString);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, `${saltString}-rum-treasury`);
 
-  const userMapMessage = await generateInstantiateUserMapMessage(
+  const rumMessage = await generateInstantiateRumMessage(
     senderAddress,
     saltString,
-    USER_MAP_CODE_ID
+    RUM_CODE_ID,
+    claimKey
   );
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    saltString,
-    appAddress,
-    TREASURY_CODE_ID
+    `${saltString}-rum-treasury`,
+    [rumAddress],
+    TREASURY_CODE_ID,
+    "Allow execution of RUM contract",
+    "This pays fees for executing messages on the RUM contract."
   );
   const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
     senderAddress,
@@ -46,9 +51,9 @@ export async function assembleTransaction({
     FAUCET_ADDRESS
   );
 
-  messages.push(userMapMessage, treasuryMessage, requestFaucetTokensMessage);
+  messages.push(rumMessage, treasuryMessage, requestFaucetTokensMessage);
 
-  return { messages, appAddress, treasuryAddress };
+  return { messages, rumAddress, treasuryAddress };
 }
 
 export async function executeBatchTransaction({

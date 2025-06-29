@@ -107,15 +107,21 @@ export default {
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
 
       // Set repository URL based on template
-      const repoUrl =
-        template === FRONTEND_TEMPLATES.MOBILE
-          ? "https://github.com/burnt-labs/abstraxion-expo-demo.git"
-          : "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
-
-      const repoName =
-        template === FRONTEND_TEMPLATES.MOBILE
-          ? "xion-mobile-quickstart"
-          : "xion-web-quickstart";
+      let repoUrl: string;
+      let repoName: string;
+      
+      if (template === FRONTEND_TEMPLATES.RUM) {
+        // RUM uses the abstraxion-reclaim-demo repository
+        repoUrl = "https://github.com/burnt-labs/abstraxion-reclaim-demo.git";
+        repoName = "xion-rum-quickstart";
+      } else if (template === FRONTEND_TEMPLATES.MOBILE) {
+        repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";
+        repoName = "xion-mobile-quickstart";
+      } else {
+        // Default to webapp
+        repoUrl = "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
+        repoName = "xion-web-quickstart";
+      }
 
       // Use the imported template
       let templateContent = installerTemplate;
@@ -153,34 +159,71 @@ export default {
       salt: saltEncoded,
     });
 
-    const treasuryAddress = predictInstantiate2Address({
+    // Predict RUM address if RUM checksum is available
+    const rumAddress = INSTANTIATE_CHECKSUMS.rum
+      ? predictInstantiate2Address({
+          senderAddress: params.user_address,
+          checksum: INSTANTIATE_CHECKSUMS.rum,
+          salt: saltEncoded,
+        })
+      : undefined;
+
+    // Treasury addresses for each contract type (using unique salts)
+    const userMapTreasuryAddress = predictInstantiate2Address({
       senderAddress: params.user_address,
       checksum: config.treasury_checksum,
-      salt: saltEncoded,
+      salt: new TextEncoder().encode(`${config.salt}-usermap-treasury`),
     });
 
-    // Skip verification if verify=false in the query parameters
+    const rumTreasuryAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.treasury_checksum,
+      salt: new TextEncoder().encode(`${config.salt}-rum-treasury`),
+    });
+
+    // Check which contracts actually exist
+    let appExists = false;
+    let userMapTreasuryExists = false;
+    let rumTreasuryExists = false;
+    let rumExists = false;
+
     if (config.verify) {
-      const appExists = await verifyContractExists({
+      appExists = await verifyContractExists({
         address: appAddress,
         restUrl: REST_URL,
       });
 
-      const treasuryExists = await verifyContractExists({
-        address: treasuryAddress,
+      userMapTreasuryExists = await verifyContractExists({
+        address: userMapTreasuryAddress,
         restUrl: REST_URL,
       });
 
-      if (!appExists || !treasuryExists) {
-        return new Response("Contract does not exist", { status: 400 });
+      rumTreasuryExists = await verifyContractExists({
+        address: rumTreasuryAddress,
+        restUrl: REST_URL,
+      });
+
+      if (rumAddress) {
+        rumExists = await verifyContractExists({
+          address: rumAddress,
+          restUrl: REST_URL,
+        });
       }
+
+      // Don't fail if contracts don't exist - just report their status
     }
 
     if (url.pathname.startsWith("/env/")) {
+      // Use the correct treasury address based on template
+      const effectiveTreasuryAddress = config.template === FRONTEND_TEMPLATES.RUM 
+        ? rumTreasuryAddress 
+        : userMapTreasuryAddress;
+
       const envText = formatEnvText(
         {
           appAddress,
-          treasuryAddress,
+          treasuryAddress: effectiveTreasuryAddress,
+          rumAddress,
         },
         config.template,
         import.meta.env.VITE_RPC_URL ||
@@ -189,7 +232,20 @@ export default {
       );
 
       if (config.values_only) {
-        return Response.json({ appAddress, treasuryAddress });
+        return Response.json({ 
+          appAddress, 
+          treasuryAddress: effectiveTreasuryAddress,
+          userMapTreasuryAddress,
+          rumTreasuryAddress, 
+          rumAddress,
+          // Include existence status when verify is true
+          ...(config.verify && {
+            appExists,
+            userMapTreasuryExists,
+            rumTreasuryExists,
+            rumExists,
+          }),
+        });
       }
 
       const headers: Record<string, string> = {

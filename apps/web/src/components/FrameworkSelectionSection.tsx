@@ -15,8 +15,8 @@ export function FrameworkSelectionSection({
   return (
     <article className="w-full mx-auto">
       <header className="mb-4">
-        <ArticleTitle>{launcherContent.step_2_title}</ArticleTitle>
-        <MutedText>{launcherContent.step_2_description}</MutedText>
+        <ArticleTitle>Step 3: Select Frontend Framework</ArticleTitle>
+        <MutedText>Choose your preferred frontend framework for the User Map application</MutedText>
       </header>
       <section className="flex flex-col gap-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -35,6 +35,7 @@ export function FrameworkSelectionSection({
             onClick={() => onTemplateChange(FRONTEND_TEMPLATES.MOBILE)}
             templateUrl={launcherContent.mobile_template_url}
           />
+
         </div>
       </section>
     </article>

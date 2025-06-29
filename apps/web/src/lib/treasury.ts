@@ -2,7 +2,7 @@ import { MsgInstantiateContract2 } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { toUtf8 } from "@cosmjs/encoding";
 import {
-  encodeContractExecutionAuthorizationBase64,
+  encodeMultiContractExecutionAuthorizationBase64,
   STATIC_PERIODIC_ALLOWANCE_BASE64,
 } from "./encodeContractGrantAndAllowance";
 import { predictInstantiate2Address } from "@burnt-labs/quick-start-utils";
@@ -25,16 +25,22 @@ export function predictTreasuryAddress(
 
 export function generateTreasuryInitMsg({
   adminAddress,
-  userMapAddress,
+  contractAddresses,
+  description = "Allow execution of UserMap and RUM contracts",
+  feeDescription = "This pays fees for executing messages on the UserMap and RUM contracts.",
 }: {
   adminAddress: string;
-  userMapAddress: string;
+  contractAddresses: string[];
+  description?: string;
+  feeDescription?: string;
 }) {
-  const contractAuthzBase64 = encodeContractExecutionAuthorizationBase64({
-    contractAddress: userMapAddress,
-    maxAmount: "2500",
-    denom: "uxion",
-  });
+  const contractAuthzBase64 = encodeMultiContractExecutionAuthorizationBase64(
+    contractAddresses,
+    {
+      maxAmount: "2500",
+      denom: "uxion",
+    }
+  );
 
   const treasuryInitMsg = {
     admin: adminAddress,
@@ -48,7 +54,7 @@ export function generateTreasuryInitMsg({
     type_urls: ["/cosmwasm.wasm.v1.MsgExecuteContract"],
     grant_configs: [
       {
-        description: "Allow execution of the User Map Contract",
+        description: description,
         optional: false,
         authorization: {
           type_url: "/cosmwasm.wasm.v1.ContractExecutionAuthorization",
@@ -57,8 +63,7 @@ export function generateTreasuryInitMsg({
       },
     ],
     fee_config: {
-      description:
-        "This pays fees for executing messages on the User Map contract.",
+      description: feeDescription,
       allowance: {
         type_url: "/cosmos.feegrant.v1beta1.PeriodicAllowance",
         value: STATIC_PERIODIC_ALLOWANCE_BASE64,
@@ -72,16 +77,20 @@ export function generateTreasuryInitMsg({
 export async function generateInstantiateTreasuryMessage(
   senderAddress: string,
   saltString: string,
-  userMapAddress: string,
-  treasuryCodeId: number
+  contractAddresses: string[],
+  treasuryCodeId: number,
+  description?: string,
+  feeDescription?: string
 ) {
   const salt = new TextEncoder().encode(saltString);
 
   const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const treasuryInitMsg = generateTreasuryInitMsg({
-    adminAddress: senderAddress,
-    userMapAddress,
+    adminAddress: treasuryAddress,
+    contractAddresses,
+    description,
+    feeDescription,
   });
 
   const msgInitTreasuryMsg = MsgInstantiateContract2.fromPartial({

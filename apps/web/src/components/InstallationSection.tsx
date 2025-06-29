@@ -3,7 +3,7 @@ import { ArticleTitle, MutedText, SectionSubheading } from "./ui/Typography";
 import { OneLiner } from "./OneLiner";
 import CopyButton from "./CopyButton";
 import { buildInstallUrl } from "../utils/url-util";
-import { type FrontendTemplate } from "../config/constants";
+import { type FrontendTemplate, FRONTEND_TEMPLATES } from "../config/constants";
 import launcherContent from "../content/launcher.json";
 
 interface InstallationSectionProps {
@@ -20,7 +20,7 @@ export function InstallationSection({
   return (
     <article className="w-full mx-auto">
       <header className="mb-4">
-        <ArticleTitle>{launcherContent.step_3_title}</ArticleTitle>
+        <ArticleTitle>{frontendTemplate === FRONTEND_TEMPLATES.RUM ? "Step 3: " : "Step 4: "}{launcherContent.step_3_title}</ArticleTitle>
         <MutedText>{launcherContent.step_3_description}</MutedText>
       </header>
 

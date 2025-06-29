@@ -5,11 +5,21 @@ export async function fetchExistingContracts({
   address: string;
   baseUrl: string;
 }) {
-  const url = `${baseUrl}/env/?user_address=${address}&values_only=true`;
+  const url = `${baseUrl}/env/?user_address=${address}&values_only=true&verify=true`;
   const response = await fetch(url);
   if (response.status === 200) {
     const data = await response.json();
-    return data;
+    // Return addresses for contracts that actually exist
+    // Use the new treasury addresses if they exist, fall back to old treasury
+    return {
+      appAddress: data.appExists ? data.appAddress : undefined,
+      treasuryAddress: data.userMapTreasuryExists 
+        ? data.userMapTreasuryAddress 
+        : (data.treasuryExists ? data.treasuryAddress : undefined),
+      rumAddress: data.rumExists ? data.rumAddress : undefined,
+      userMapTreasuryAddress: data.userMapTreasuryExists ? data.userMapTreasuryAddress : undefined,
+      rumTreasuryAddress: data.rumTreasuryExists ? data.rumTreasuryAddress : undefined,
+    };
   }
   return null;
 }

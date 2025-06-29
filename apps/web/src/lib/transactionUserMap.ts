@@ -27,7 +27,7 @@ export async function assembleUserMapTransaction({
   }
 
   const appAddress = predictUserMapAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, `${saltString}-usermap-treasury`);
+  const treasuryAddress = predictTreasuryAddress(senderAddress, saltString);
 
   const userMapMessage = await generateInstantiateUserMapMessage(
     senderAddress,

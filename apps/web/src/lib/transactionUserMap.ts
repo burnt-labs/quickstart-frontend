@@ -36,7 +36,7 @@ export async function assembleUserMapTransaction({
   );
   const treasuryMessage = await generateInstantiateTreasuryMessage(
     senderAddress,
-    `${saltString}-usermap-treasury`,
+    saltString,
     [appAddress],
     TREASURY_CODE_ID,
     "Allow execution of UserMap contract",

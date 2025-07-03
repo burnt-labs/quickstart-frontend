@@ -8,7 +8,6 @@ import { CONTRACT_TYPES, type ContractType } from "../config/contractTypes";
 interface LaunchSectionProps {
   onLaunch: () => void;
   isPending: boolean;
-  addresses: { appAddress: string; treasuryAddress: string; rumAddress?: string } | null;
   isSuccess: boolean;
   transactionHash: string;
   errorMessage: string;
@@ -20,7 +19,6 @@ interface LaunchSectionProps {
 export function LaunchSection({
   onLaunch,
   isPending,
-  addresses: _addresses,
   isSuccess,
   transactionHash,
   errorMessage,
@@ -29,11 +27,11 @@ export function LaunchSection({
   isDeployed,
 }: LaunchSectionProps) {
   const stepTitle = contractType === CONTRACT_TYPES.USER_MAP 
-    ? "Step 2: Launch User Map Contract" 
-    : "Step 2: Launch RUM Contract";
+    ? "Launch Contract" 
+    : "Launch Contracts";
   const stepDescription = contractType === CONTRACT_TYPES.USER_MAP
     ? "Deploy your User Map contract and treasury to the blockchain"
-    : "Deploy your RUM contract and treasury to the blockchain";
+    : "Deploy your RUM contracts with a shared treasury";
 
   return (
     <article className="w-full mx-auto">
@@ -52,7 +50,7 @@ export function LaunchSection({
             : isDeployed
             ? launcherContent.launch_button_text.launched
             : contractType === CONTRACT_TYPES.RUM
-            ? "Launch RUM & Fund Treasury"
+            ? "Deploy RUM Contracts"
             : "Launch User Map & Fund Treasury"}
         </BaseButton>
       </section>

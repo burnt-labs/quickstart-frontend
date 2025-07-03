@@ -5,10 +5,14 @@ import {
 } from "./rum";
 import {
   generateInstantiateTreasuryMessage,
-  predictTreasuryAddress,
 } from "./treasury";
 import { generateRequestFaucetTokensMessage } from "./faucet";
 import { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import { 
+  checkSharedRumTreasury, 
+  getExistingRumAddresses
+} from "./sharedTreasury";
+import { INSTANTIATE_SALT } from "../config/constants";
 
 export async function assembleRumTransaction({
   senderAddress,
@@ -23,35 +27,82 @@ export async function assembleRumTransaction({
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
   const RUM_CODE_ID = import.meta.env.VITE_RUM_CODE_ID;
   const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_ADDRESS;
+  const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
 
   if (!TREASURY_CODE_ID || !RUM_CODE_ID || !FAUCET_ADDRESS) {
     throw new Error("Missing environment variables");
   }
 
   const rumAddress = predictRumAddress(senderAddress, saltString);
-  const treasuryAddress = predictTreasuryAddress(senderAddress, `${saltString}-rum-treasury`);
+  
+  // Check if shared treasury exists
+  const sharedTreasury = await checkSharedRumTreasury(senderAddress, REST_URL);
+  
+  let treasuryAddress: string;
+  let treasurySalt: string;
+  
+  if (sharedTreasury.exists) {
+    // Use existing shared treasury
+    treasuryAddress = sharedTreasury.address;
+    treasurySalt = sharedTreasury.salt;
+  } else {
+    // Create new shared treasury with pre-calculated allowed contracts
+    treasuryAddress = sharedTreasury.address;
+    treasurySalt = sharedTreasury.salt;
+    
+    // Get existing RUM addresses
+    const baseSalt = INSTANTIATE_SALT; // Use the standard base salt
+    const existingRumAddresses = await getExistingRumAddresses(
+      senderAddress,
+      baseSalt,
+      REST_URL,
+      15
+    );
+    
+    // Include the current RUM address and existing ones
+    const allowedContracts = [rumAddress, ...existingRumAddresses];
+    
+    // Add a few future slots if we have room (limit to 15 total)
+    const totalSlots = allowedContracts.length;
+    if (totalSlots < 15) {
+      for (let i = 0; i < Math.min(5, 15 - totalSlots); i++) {
+        const futureIndex = existingRumAddresses.length + 1 + i;
+        const salt = futureIndex === 0 ? baseSalt : `${baseSalt}-${futureIndex.toString().padStart(4, '0')}`;
+        const futureAddress = predictRumAddress(senderAddress, salt);
+        allowedContracts.push(futureAddress);
+      }
+    }
+    
+    const treasuryMessage = await generateInstantiateTreasuryMessage(
+      senderAddress,
+      treasurySalt,
+      allowedContracts,
+      TREASURY_CODE_ID,
+      "Shared treasury for all RUM contracts",
+      "This pays fees for executing messages on any RUM contract."
+    );
+    
+    messages.push(treasuryMessage);
+  }
 
+  // Always create the RUM contract
   const rumMessage = await generateInstantiateRumMessage(
     senderAddress,
     saltString,
     RUM_CODE_ID,
     claimKey
   );
-  const treasuryMessage = await generateInstantiateTreasuryMessage(
-    senderAddress,
-    `${saltString}-rum-treasury`,
-    [rumAddress],
-    TREASURY_CODE_ID,
-    "Allow execution of RUM contract",
-    "This pays fees for executing messages on the RUM contract."
-  );
-  const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
-    senderAddress,
-    treasuryAddress,
-    FAUCET_ADDRESS
-  );
-
-  messages.push(rumMessage, treasuryMessage, requestFaucetTokensMessage);
+  messages.push(rumMessage);
+  
+  // Only request faucet tokens if we created a new treasury
+  if (!sharedTreasury.exists) {
+    const requestFaucetTokensMessage = await generateRequestFaucetTokensMessage(
+      senderAddress,
+      treasuryAddress,
+      FAUCET_ADDRESS
+    );
+    messages.push(requestFaucetTokensMessage);
+  }
 
   return { messages, rumAddress, treasuryAddress };
 }

@@ -172,7 +172,7 @@ export default {
     const userMapTreasuryAddress = predictInstantiate2Address({
       senderAddress: params.user_address,
       checksum: config.treasury_checksum,
-      salt: new TextEncoder().encode(`${config.salt}-usermap-treasury`),
+      salt: saltEncoded,
     });
 
     const rumTreasuryAddress = predictInstantiate2Address({

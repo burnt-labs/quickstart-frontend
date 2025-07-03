@@ -31,7 +31,7 @@ export function DeployedContractsSection({
     <div className="w-full max-w-screen-md space-y-4 mb-8">
       <SectionTitle>Deployed {contractTypeName} Contracts</SectionTitle>
       <div className="space-y-2">
-        {deployedContracts.map((contract, index) => (
+        {deployedContracts.map((contract) => (
           <div
             key={contract.address}
             className="p-3 bg-zinc-800 border border-zinc-700 rounded-md space-y-1"

@@ -3,10 +3,9 @@ import { Button } from "./ui/Button";
 import { BaseButton } from "./ui/BaseButton";
 import { PlusIcon, Cross2Icon } from "@radix-ui/react-icons";
 
-export interface RumConfig {
-  id: string;
-  claimKey: string;
-}
+// Re-export RumConfig type from the hook
+export type { RumConfig } from "../hooks/useRumConfigs";
+import type { RumConfig } from "../hooks/useRumConfigs";
 
 interface MultiRumConfigSectionProps {
   configs: RumConfig[];

@@ -33,13 +33,15 @@ export function extractIndexFromSalt(salt: string, baseSalt: string): number {
     return 0;
   }
   
-  const match = salt.match(new RegExp(`^${baseSalt}-(\d{4})$`));
+  // eslint-disable-next-line no-useless-escape
+  const match = salt.match(new RegExp(`^${baseSalt}-(\\d{4})$`));
   if (match && match[1]) {
     return parseInt(match[1], 10);
   }
   
   // Legacy format without padding
-  const legacyMatch = salt.match(new RegExp(`^${baseSalt}-(\d+)$`));
+  // eslint-disable-next-line no-useless-escape
+  const legacyMatch = salt.match(new RegExp(`^${baseSalt}-(\\d+)$`));
   if (legacyMatch && legacyMatch[1]) {
     return parseInt(legacyMatch[1], 10);
   }

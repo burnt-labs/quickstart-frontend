@@ -17,6 +17,11 @@ interface LaunchRumTransactionResult {
   tx: DeliverTxResponse;
   rumAddress: string;
   treasuryAddress: string;
+  rumDeployments?: Array<{
+    address: string;
+    claimKey: string;
+    salt: string;
+  }>;
 }
 
 export function useLaunchRumTransaction(
@@ -45,6 +50,11 @@ export function useLaunchRumTransaction(
         tx,
         rumAddress,
         treasuryAddress,
+        rumDeployments: [{
+          address: rumAddress,
+          claimKey,
+          salt: saltString,
+        }],
       };
     },
     ...options,

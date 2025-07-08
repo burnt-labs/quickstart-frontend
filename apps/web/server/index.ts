@@ -175,10 +175,11 @@ export default {
       salt: saltEncoded,
     });
 
+    // RUM contracts use a shared treasury with a specific salt
     const rumTreasuryAddress = predictInstantiate2Address({
       senderAddress: params.user_address,
       checksum: config.treasury_checksum,
-      salt: new TextEncoder().encode(`${config.salt}-rum-treasury`),
+      salt: new TextEncoder().encode("xion-rocks-shared-rum-treasury"),
     });
 
     // Check which contracts actually exist

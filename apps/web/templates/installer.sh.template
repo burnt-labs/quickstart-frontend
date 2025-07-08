@@ -110,48 +110,76 @@ fi
 # Navigate to the repository
 cd "$REPO_NAME"
 
-# For RUM template, checkout the impl-reclaim branch
-if [ "{{template}}" = "rum" ]; then
-  echo -e "${BLUE}Checking out impl-reclaim branch for RUM template...${NC}"
-  git checkout impl-reclaim
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to checkout impl-reclaim branch.${NC}"
-    echo -e "${YELLOW}This branch may not exist yet. Continuing with default branch...${NC}"
+# Handle .env.local file
+echo -e "\n${BLUE}Setting up .env.local file...${NC}"
+
+# Check if .env.local already exists
+if [ -f ".env.local" ]; then
+  echo -e "${YELLOW}.env.local file already exists.${NC}"
+  read -p "Do you want to update it with new contract addresses? (y/n): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}Keeping existing .env.local file.${NC}"
   else
-    echo -e "${GREEN}✓ Successfully checked out impl-reclaim branch${NC}"
-  fi
-fi
+    # Backup existing file
+    cp .env.local .env.local.backup
+    echo -e "${GREEN}✓ Backed up existing .env.local to .env.local.backup${NC}"
+    
+    # Get user address from the wallet
+    if command_exists curl; then
+      # Try to fetch environment values from the server
+      ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
 
-# Create .env.local file
-echo -e "\n${BLUE}Creating .env.local file...${NC}"
+      if [ -n "$USER_ADDRESS" ]; then
+        ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
+      fi
 
-# Get user address from the wallet
-if command_exists curl; then
-  # Try to fetch environment values from the server
-  ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
+      ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)
 
-  if [ -n "$USER_ADDRESS" ]; then
-    ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
-  fi
-
-  ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)
-
-  if [ $? -eq 0 ] && [ -n "$ENV_CONTENT" ]; then
-    echo -e "${GREEN}✓ Successfully fetched environment values${NC}"
-    echo "${ENV_CONTENT}" > .env.local
-  else
-    echo -e "${RED}✗ Failed to fetch environment variables from the server${NC}"
-    echo -e "${RED}Please ensure you have a valid wallet address and try again${NC}"
-    exit 1
+      if [ $? -eq 0 ] && [ -n "$ENV_CONTENT" ]; then
+        echo -e "${GREEN}✓ Successfully fetched environment values${NC}"
+        echo "${ENV_CONTENT}" > .env.local
+        echo -e "${GREEN}✓ Updated .env.local file${NC}"
+      else
+        echo -e "${RED}✗ Failed to fetch environment variables from the server${NC}"
+        echo -e "${RED}Please ensure you have a valid wallet address and try again${NC}"
+        exit 1
+      fi
+    else
+      echo -e "${RED}✗ curl is not installed${NC}"
+      echo -e "${RED}curl is required to fetch environment variables from the server${NC}"
+      echo -e "${YELLOW}Please install curl and try again${NC}"
+      exit 1
+    fi
   fi
 else
-  echo -e "${RED}✗ curl is not installed${NC}"
-  echo -e "${RED}curl is required to fetch environment variables from the server${NC}"
-  echo -e "${YELLOW}Please install curl and try again${NC}"
-  exit 1
-fi
+  # Create new .env.local file
+  if command_exists curl; then
+    # Try to fetch environment values from the server
+    ENV_URL="${SERVER_URL}/env/?template={{template}}&verify=true"
 
-echo -e "${GREEN}✓ Created .env.local file${NC}"
+    if [ -n "$USER_ADDRESS" ]; then
+      ENV_URL="${ENV_URL}&user_address=${USER_ADDRESS}"
+    fi
+
+    ENV_CONTENT=$(curl -fsSL "${ENV_URL}" 2>/dev/null)
+
+    if [ $? -eq 0 ] && [ -n "$ENV_CONTENT" ]; then
+      echo -e "${GREEN}✓ Successfully fetched environment values${NC}"
+      echo "${ENV_CONTENT}" > .env.local
+      echo -e "${GREEN}✓ Created .env.local file${NC}"
+    else
+      echo -e "${RED}✗ Failed to fetch environment variables from the server${NC}"
+      echo -e "${RED}Please ensure you have a valid wallet address and try again${NC}"
+      exit 1
+    fi
+  else
+    echo -e "${RED}✗ curl is not installed${NC}"
+    echo -e "${RED}curl is required to fetch environment variables from the server${NC}"
+    echo -e "${YELLOW}Please install curl and try again${NC}"
+    exit 1
+  fi
+fi
 
 # For RUM template, interactively ask for Reclaim Protocol credentials
 if [ "{{template}}" = "rum" ]; then
@@ -255,5 +283,10 @@ else
 fi
 
 # Note about contract addresses
-echo -e "\n${BLUE}Note: Your .env.local file has been populated with contract addresses.${NC}"
-echo -e "${BLUE}If you need to use different contract addresses, you can edit the .env.local file.${NC}"
+if [ -f ".env.local" ]; then
+  echo -e "\n${BLUE}Note: Your .env.local file contains contract addresses.${NC}"
+  echo -e "${BLUE}If you need to use different contract addresses, you can edit the .env.local file.${NC}"
+  if [ -f ".env.local.backup" ]; then
+    echo -e "${BLUE}Your previous .env.local was backed up to .env.local.backup${NC}"
+  fi
+fi

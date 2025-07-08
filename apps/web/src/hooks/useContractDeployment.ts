@@ -4,7 +4,7 @@ import { type GranteeSignerClient } from "@burnt-labs/abstraxion";
 import { useLaunchUserMapTransaction } from "./useLaunchUserMapTransaction";
 import { useLaunchMultiRumTransaction } from "./useLaunchMultiRumTransaction";
 import { useExistingContracts } from "./useExistingContracts";
-import { formatEnvText } from "@burnt-labs/quick-start-utils";
+import { formatEnvText, DEFAULT_API_URLS } from "@burnt-labs/quick-start-utils";
 import { 
   CONTRACT_TYPES, 
   type ContractType 
@@ -17,8 +17,8 @@ import {
 import { ContractDeploymentService } from "../services/ContractDeploymentService";
 import { ContractQueryService } from "../services/ContractQueryService";
 
-const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
-const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
+const RPC_URL = import.meta.env.VITE_RPC_URL || DEFAULT_API_URLS.RPC;
+const REST_URL = import.meta.env.VITE_REST_URL || DEFAULT_API_URLS.REST;
 
 export interface DeployedContract {
   address: string;
@@ -272,6 +272,7 @@ export function useContractDeployment(
       senderAddress,
       saltString: INSTANTIATE_SALT,
       client,
+      frontendTemplate,
     });
   };
 

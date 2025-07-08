@@ -1,8 +1,9 @@
 import { getDeployedContractsWithSalts, extractIndexFromSalt } from "../utils/saltGeneration";
 import { checkSharedRumTreasury } from "../lib/sharedTreasury";
 import type { DeployedContract } from "../hooks/useContractDeployment";
+import { DEFAULT_API_URLS } from "@burnt-labs/quick-start-utils";
 
-const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
+const REST_URL = import.meta.env.VITE_REST_URL || DEFAULT_API_URLS.REST;
 
 export interface ContractQueryOptions {
   baseSalt: string;

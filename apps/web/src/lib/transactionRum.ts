@@ -7,12 +7,13 @@ import {
   generateInstantiateTreasuryMessage,
 } from "./treasury";
 import { generateRequestFaucetTokensMessage } from "./faucet";
-import { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import { executeBatchTransaction } from "./transaction";
 import { 
   checkSharedRumTreasury, 
   getExistingRumAddresses
 } from "./sharedTreasury";
 import { INSTANTIATE_SALT } from "../config/constants";
+import { REDIRECT_URLS, DEFAULT_API_URLS } from "@burnt-labs/quick-start-utils";
 
 export async function assembleRumTransaction({
   senderAddress,
@@ -27,7 +28,7 @@ export async function assembleRumTransaction({
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
   const RUM_CODE_ID = import.meta.env.VITE_RUM_CODE_ID;
   const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_ADDRESS;
-  const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
+  const REST_URL = import.meta.env.VITE_REST_URL || DEFAULT_API_URLS.REST;
 
   if (!TREASURY_CODE_ID || !RUM_CODE_ID || !FAUCET_ADDRESS) {
     throw new Error("Missing environment variables");
@@ -78,6 +79,7 @@ export async function assembleRumTransaction({
       treasurySalt,
       allowedContracts,
       TREASURY_CODE_ID,
+      REDIRECT_URLS.RUM,
       "Shared treasury for all RUM contracts",
       "This pays fees for executing messages on any RUM contract."
     );
@@ -107,18 +109,4 @@ export async function assembleRumTransaction({
   return { messages, rumAddress, treasuryAddress };
 }
 
-export async function executeBatchTransaction({
-  client,
-  messages,
-  senderAddress,
-}: {
-  client: GranteeSignerClient;
-  messages: EncodeObject[];
-  senderAddress: string;
-}) {
-  if (!client) {
-    throw new Error("Client is not connected");
-  }
-  const tx = await client.signAndBroadcast(senderAddress, messages, "auto");
-  return tx;
-}
+export { executeBatchTransaction };

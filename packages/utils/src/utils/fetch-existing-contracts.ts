@@ -18,6 +18,7 @@ export async function fetchExistingContracts({
         : (data.treasuryExists ? data.treasuryAddress : undefined),
       rumAddress: data.rumExists ? data.rumAddress : undefined,
       userMapTreasuryAddress: data.userMapTreasuryExists ? data.userMapTreasuryAddress : undefined,
+      mobileTreasuryAddress: data.mobileTreasuryExists ? data.mobileTreasuryAddress : undefined,
       rumTreasuryAddress: data.rumTreasuryExists ? data.rumTreasuryAddress : undefined,
     };
   }

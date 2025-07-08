@@ -7,20 +7,15 @@ import {
   generateInstantiateTreasuryMessage,
 } from "./treasury";
 import { generateRequestFaucetTokensMessage } from "./faucet";
-import { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import { executeBatchTransaction } from "./transaction";
 import { 
   checkSharedRumTreasury, 
-  getExistingRumAddresses
+  getExistingRumAddresses,
+  generateRumSaltForSharedTreasury
 } from "./sharedTreasury";
 import { generateDynamicSalt } from "../utils/saltGeneration";
+import { DEFAULT_API_URLS, REDIRECT_URLS } from "@burnt-labs/quick-start-utils";
 
-// Helper function to generate RUM salt
-function generateRumSaltForSharedTreasury(baseSalt: string, _claimKey: string, index: number): string {
-  if (index === 0) {
-    return baseSalt;
-  }
-  return `${baseSalt}-${index.toString().padStart(4, '0')}`;
-}
 
 export interface RumDeploymentConfig {
   claimKey: string;
@@ -49,7 +44,7 @@ export async function assembleMultiRumTransaction({
   const TREASURY_CODE_ID = import.meta.env.VITE_TREASURY_CODE_ID;
   const RUM_CODE_ID = import.meta.env.VITE_RUM_CODE_ID;
   const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_ADDRESS;
-  const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
+  const REST_URL = import.meta.env.VITE_REST_URL || DEFAULT_API_URLS.REST;
 
   if (!TREASURY_CODE_ID || !RUM_CODE_ID || !FAUCET_ADDRESS) {
     throw new Error("Missing environment variables");
@@ -126,6 +121,7 @@ export async function assembleMultiRumTransaction({
       treasurySalt,
       allowedContracts,
       TREASURY_CODE_ID,
+      REDIRECT_URLS.RUM,
       "Shared treasury for all RUM contracts",
       "This pays fees for executing messages on any RUM contract."
     );
@@ -157,18 +153,4 @@ export async function assembleMultiRumTransaction({
   return { messages, rumDeployments, treasuryAddress };
 }
 
-export async function executeBatchTransaction({
-  client,
-  messages,
-  senderAddress,
-}: {
-  client: GranteeSignerClient;
-  messages: EncodeObject[];
-  senderAddress: string;
-}) {
-  if (!client) {
-    throw new Error("Client is not connected");
-  }
-  const tx = await client.signAndBroadcast(senderAddress, messages, "auto");
-  return tx;
-}
+export { executeBatchTransaction };

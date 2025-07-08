@@ -64,7 +64,7 @@ export async function getExistingRumAddresses(
 /**
  * Generates a RUM salt specifically for shared treasury usage
  */
-function generateRumSaltForSharedTreasury(baseSalt: string, _claimKey: string, index: number): string {
+export function generateRumSaltForSharedTreasury(baseSalt: string, _claimKey: string, index: number): string {
   // Use simple incremental pattern
   if (index === 0) {
     return baseSalt;

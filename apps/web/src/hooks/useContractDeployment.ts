@@ -127,25 +127,34 @@ export function useContractDeployment(
   // Check for existing contracts on startup
   useEffect(() => {
     if (existingAddresses) {
-      const updates: DeploymentState = {};
-      
-      if (existingAddresses.appAddress) {
-        updates[CONTRACT_TYPES.USER_MAP] = {
-          appAddress: existingAddresses.appAddress,
-          treasuryAddress: existingAddresses.userMapTreasuryAddress || "",
-        };
-      }
-      
-      if (existingAddresses.rumAddress) {
-        updates[CONTRACT_TYPES.RUM] = {
-          rumAddress: existingAddresses.rumAddress,
-          treasuryAddress: existingAddresses.rumTreasuryAddress || "",
-        };
-      }
-      
-      if (Object.keys(updates).length > 0) {
-        setDeployedContracts(updates);
-      }
+      setDeployedContracts(prev => {
+        const updates: DeploymentState = {};
+        
+        if (existingAddresses.appAddress) {
+          updates[CONTRACT_TYPES.USER_MAP] = {
+            appAddress: existingAddresses.appAddress,
+            treasuryAddress: existingAddresses.userMapTreasuryAddress || "",
+          };
+        }
+        
+        if (existingAddresses.rumAddress) {
+          // Preserve the existing treasury address if we already have one from deployment
+          const existingRumDeployment = prev[CONTRACT_TYPES.RUM];
+          updates[CONTRACT_TYPES.RUM] = {
+            rumAddress: existingAddresses.rumAddress,
+            treasuryAddress: existingAddresses.rumTreasuryAddress || existingRumDeployment?.treasuryAddress || "",
+          };
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          return {
+            ...prev,
+            ...updates
+          };
+        }
+        
+        return prev;
+      });
     }
   }, [existingAddresses]);
 

@@ -1,7 +1,7 @@
 // Redirect URLs for different treasury types
 export const REDIRECT_URLS = {
   WEB: "http://localhost:3000",
-  MOBILE: "abstraxionreclaimdemo://",
+  MOBILE: "abstraxion-expo-demo://",
   RUM: "abstraxionreclaimdemo://",
 } as const;
 

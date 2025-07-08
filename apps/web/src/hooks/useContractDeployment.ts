@@ -131,9 +131,14 @@ export function useContractDeployment(
         const updates: DeploymentState = {};
         
         if (existingAddresses.appAddress) {
+          // Choose the appropriate treasury based on frontend template
+          const treasuryAddress = frontendTemplate === FRONTEND_TEMPLATES.MOBILE
+            ? (existingAddresses.mobileTreasuryAddress || existingAddresses.userMapTreasuryAddress || "")
+            : (existingAddresses.userMapTreasuryAddress || "");
+            
           updates[CONTRACT_TYPES.USER_MAP] = {
             appAddress: existingAddresses.appAddress,
-            treasuryAddress: existingAddresses.userMapTreasuryAddress || "",
+            treasuryAddress,
           };
         }
         
@@ -156,7 +161,7 @@ export function useContractDeployment(
         return prev;
       });
     }
-  }, [existingAddresses]);
+  }, [existingAddresses, frontendTemplate]);
 
   // Get current contract type's deployed addresses
   const currentDeployment = contractType === CONTRACT_TYPES.USER_MAP 

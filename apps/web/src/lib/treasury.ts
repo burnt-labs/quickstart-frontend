@@ -7,6 +7,7 @@ import {
 } from "./encodeContractGrantAndAllowance";
 import { predictInstantiate2Address } from "@burnt-labs/quick-start-utils";
 import { INSTANTIATE_CHECKSUMS } from "../config/constants";
+import { TREASURY_CONFIG } from "./constants";
 
 export function predictTreasuryAddress(
   senderAddress: string,
@@ -26,26 +27,29 @@ export function predictTreasuryAddress(
 export function generateTreasuryInitMsg({
   adminAddress,
   contractAddresses,
+  redirectUrl,
   description = "Allow execution of UserMap and RUM contracts",
   feeDescription = "This pays fees for executing messages on the UserMap and RUM contracts.",
 }: {
   adminAddress: string;
   contractAddresses: string[];
+  redirectUrl: string;
   description?: string;
   feeDescription?: string;
 }) {
   const contractAuthzBase64 = encodeMultiContractExecutionAuthorizationBase64(
     contractAddresses,
     {
-      maxAmount: "2500",
-      denom: "uxion",
+      maxAmount: TREASURY_CONFIG.MAX_AMOUNT,
+      denom: TREASURY_CONFIG.DENOM,
     }
   );
 
   const treasuryInitMsg = {
     admin: adminAddress,
+    redirect_url: redirectUrl,
     params: {
-      redirect_url: "http://localhost:3000",
+      redirect_url: redirectUrl,
       icon_url:
         "https://api.dicebear.com/9.x/identicon/svg?rowColor=333333,d1d1d1&backgroundColor=000000&seed=" +
         adminAddress,
@@ -79,6 +83,7 @@ export async function generateInstantiateTreasuryMessage(
   saltString: string,
   contractAddresses: string[],
   treasuryCodeId: number,
+  redirectUrl: string,
   description?: string,
   feeDescription?: string
 ) {
@@ -89,6 +94,7 @@ export async function generateInstantiateTreasuryMessage(
   const treasuryInitMsg = generateTreasuryInitMsg({
     adminAddress: senderAddress,
     contractAddresses,
+    redirectUrl,
     description,
     feeDescription,
   });

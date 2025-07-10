@@ -10,7 +10,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "deploy": "turbo run deploy",
-    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc"
+    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc",
+    "test": "turbo run test"
   },
   "packageManager": "pnpm@10.5.2",
   "devDependencies": {

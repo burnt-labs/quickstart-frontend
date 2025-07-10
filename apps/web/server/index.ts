@@ -9,6 +9,8 @@ import {
   formatEnvText,
   predictInstantiate2Address,
   verifyContractExists,
+  DEFAULT_API_URLS,
+  getTemplateRepoInfo,
 } from "@burnt-labs/quick-start-utils";
 import installerTemplate from "../templates/installer.sh.template?raw";
 
@@ -106,22 +108,10 @@ export default {
       const template =
         url.searchParams.get("template") || FRONTEND_TEMPLATES.WEBAPP;
 
-      // Set repository URL based on template
-      let repoUrl: string;
-      let repoName: string;
-      
-      if (template === FRONTEND_TEMPLATES.RUM) {
-        // RUM uses the abstraxion-reclaim-demo repository
-        repoUrl = "https://github.com/burnt-labs/abstraxion-reclaim-demo.git";
-        repoName = "xion-rum-quickstart";
-      } else if (template === FRONTEND_TEMPLATES.MOBILE) {
-        repoUrl = "https://github.com/burnt-labs/abstraxion-expo-demo.git";
-        repoName = "xion-mobile-quickstart";
-      } else {
-        // Default to webapp
-        repoUrl = "https://github.com/burnt-labs/xion-user-map-json-store-frontend.git";
-        repoName = "xion-web-quickstart";
-      }
+      // Get repository info based on template
+      const repoInfo = getTemplateRepoInfo(template);
+      const repoUrl = repoInfo.url;
+      const repoName = repoInfo.name;
 
       // Use the imported template
       let templateContent = installerTemplate;
@@ -175,6 +165,12 @@ export default {
       salt: saltEncoded,
     });
 
+    const mobileTreasuryAddress = predictInstantiate2Address({
+      senderAddress: params.user_address,
+      checksum: config.treasury_checksum,
+      salt: new TextEncoder().encode(`${config.salt}-mobile-treasury`),
+    });
+
     // RUM contracts use a shared treasury with a specific salt
     const rumTreasuryAddress = predictInstantiate2Address({
       senderAddress: params.user_address,
@@ -185,6 +181,7 @@ export default {
     // Check which contracts actually exist
     let appExists = false;
     let userMapTreasuryExists = false;
+    let mobileTreasuryExists = false;
     let rumTreasuryExists = false;
     let rumExists = false;
 
@@ -196,6 +193,11 @@ export default {
 
       userMapTreasuryExists = await verifyContractExists({
         address: userMapTreasuryAddress,
+        restUrl: REST_URL,
+      });
+
+      mobileTreasuryExists = await verifyContractExists({
+        address: mobileTreasuryAddress,
         restUrl: REST_URL,
       });
 
@@ -218,6 +220,8 @@ export default {
       // Use the correct treasury address based on template
       const effectiveTreasuryAddress = config.template === FRONTEND_TEMPLATES.RUM 
         ? rumTreasuryAddress 
+        : config.template === FRONTEND_TEMPLATES.MOBILE
+        ? mobileTreasuryAddress
         : userMapTreasuryAddress;
 
       const envText = formatEnvText(
@@ -227,9 +231,8 @@ export default {
           rumAddress,
         },
         config.template,
-        import.meta.env.VITE_RPC_URL ||
-          "https://rpc.xion-testnet-2.burnt.com:443",
-        import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com"
+        import.meta.env.VITE_RPC_URL || DEFAULT_API_URLS.RPC,
+        import.meta.env.VITE_REST_URL || DEFAULT_API_URLS.REST
       );
 
       if (config.values_only) {
@@ -237,12 +240,14 @@ export default {
           appAddress, 
           treasuryAddress: effectiveTreasuryAddress,
           userMapTreasuryAddress,
+          mobileTreasuryAddress,
           rumTreasuryAddress, 
           rumAddress,
           // Include existence status when verify is true
           ...(config.verify && {
             appExists,
             userMapTreasuryExists,
+            mobileTreasuryExists,
             rumTreasuryExists,
             rumExists,
           }),

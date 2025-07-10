@@ -5,11 +5,13 @@ import {
   assembleUserMapTransaction,
   executeBatchTransaction,
 } from "../lib/transactionUserMap";
+import { FrontendTemplate } from "@burnt-labs/quick-start-utils";
 
 interface LaunchUserMapTransactionParams {
   senderAddress: string;
   saltString: string;
   client: GranteeSignerClient;
+  frontendTemplate: FrontendTemplate;
 }
 
 interface LaunchUserMapTransactionResult {
@@ -26,11 +28,12 @@ export function useLaunchUserMapTransaction(
   >
 ) {
   return useMutation<LaunchUserMapTransactionResult, Error, LaunchUserMapTransactionParams>({
-    mutationFn: async ({ senderAddress, saltString, client }) => {
+    mutationFn: async ({ senderAddress, saltString, client, frontendTemplate }) => {
       const { messages, appAddress, treasuryAddress } =
         await assembleUserMapTransaction({
           senderAddress,
           saltString,
+          frontendTemplate,
         });
 
       const tx = await executeBatchTransaction({

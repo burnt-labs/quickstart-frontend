@@ -21,7 +21,7 @@
     "@burnt-labs/quick-start-ui": "workspace:^",
     "@burnt-labs/quick-start-utils": "workspace:^",
     "@burnt-labs/ui": "0.1.0-alpha.17",
-    "@cloudflare/vite-plugin": "^1.1.1",
+    "@cloudflare/vite-plugin": "^1.6.0",
     "@cosmjs/cosmwasm-stargate": "^0.33.1",
     "@cosmjs/crypto": "^0.33.1",
     "@cosmjs/encoding": "^0.33.1",
@@ -60,7 +60,7 @@
     "tailwindcss": "^4.1.4",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.1",
+    "vite": "^6.3.4",
     "vitest": "^3.2.4"
   }
 }

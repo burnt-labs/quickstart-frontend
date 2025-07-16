@@ -1,0 +1,22 @@
+{
+  "name": "nft-builder-utils",
+  "version": "0.0.1",
+  "description": "Shared utilities for NFT Builder",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@cosmjs/encoding": "^0.33.1",
+    "@cosmjs/crypto": "^0.33.1",
+    "@noble/hashes": "^1.8.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2"
+  }
+}

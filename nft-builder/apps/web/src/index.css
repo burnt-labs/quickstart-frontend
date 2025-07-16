@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import "tailwindcss";
+@tailwind utilities;
+
+@theme {
+  --color-testnet-bg: rgba(255, 170, 74, 0.2);
+  --color-testnet: rgb(255, 170, 74);
+  --color-secondary-text: #8d8d8d;
+  --color-grey-text: #A3A3A3;
+}
+@layer base {
+  :root {
+    --font-dm-sans: "DM Sans", sans-serif;
+    --background: #090909;
+    --foreground: #fff;
+    --card: #1c1c1c;
+    --card-foreground: var(--color-white);
+    --popover: #1c1c1c;
+    --popover-foreground: var(--color-white);
+    --primary: #3fe6a3;
+    --primary-foreground: #020304;
+    --secondary: var(--color-gray-700);
+    --secondary-foreground: var(--color-white);
+    --muted: var(--color-gray-600);
+    --muted-foreground: var(--color-gray-500);
+    --accent: #f2c94c;
+    --accent-foreground: var(--color-gray-900);
+    --destructive: var(--color-red-900);
+    --destructive-foreground: var(--color-white);
+    --border: var(--color-gray-700);
+    --input: var(--color-gray-700);
+  }
+
+  body {
+    font-family: var(--font-dm-sans);
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+
+  * {
+    font-family: var(--font-dm-sans);
+  }
+}
+
+@layer utilities {
+  .card {
+    @apply bg-[#1D1D1D]/80 rounded-lg shadow-sm border border-white/20 p-6;
+  }
+  
+  .card-title {
+    @apply text-2xl leading-7 font-semibold;
+  }
+  
+  .card-description {
+    @apply text-sm leading-5 text-grey-text;
+  }
+  
+  /* Custom scrollbar styles */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}

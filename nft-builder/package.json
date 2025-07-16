@@ -1,0 +1,20 @@
+{
+  "name": "xion-nft-builder",
+  "version": "0.0.1",
+  "description": "NFT Contract Builder for XION blockchain",
+  "author": "Joshua Brigati",
+  "license": "MIT",
+  "keywords": ["nft", "xion", "blockchain", "cosmwasm"],
+  "main": "index.js",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "deploy": "turbo run deploy",
+    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc"
+  },
+  "packageManager": "pnpm@10.5.2",
+  "devDependencies": {
+    "turbo": "^2.5.1",
+    "wrangler": "^4.18.0"
+  }
+}

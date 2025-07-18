@@ -6,20 +6,35 @@ import {
 import { LauncherView } from "./LauncherView";
 import { useContractDeployment } from "../hooks/useContractDeployment";
 import { useRumConfigs } from "../hooks/useRumConfigs";
-import { DEFAULT_FRONTEND_TEMPLATE, type FrontendTemplate } from "../config/constants";
-import { CONTRACT_TYPES, DEFAULT_CONTRACT_TYPE, type ContractType } from "../config/contractTypes";
+import {
+  DEFAULT_FRONTEND_TEMPLATE,
+  type FrontendTemplate,
+} from "../config/constants";
+import {
+  CONTRACT_TYPES,
+  DEFAULT_CONTRACT_TYPE,
+  type ContractType,
+} from "../config/contractTypes";
 import launcherContent from "../content/launcher.json";
 
 export default function LauncherContainer() {
-  const [contractType, setContractType] = useState<ContractType>(DEFAULT_CONTRACT_TYPE);
-  const [frontendTemplate, setFrontendTemplate] = useState<FrontendTemplate>(DEFAULT_FRONTEND_TEMPLATE);
-  
+  const [contractType, setContractType] = useState<ContractType>(
+    DEFAULT_CONTRACT_TYPE
+  );
+  const [frontendTemplate, setFrontendTemplate] = useState<FrontendTemplate>(
+    DEFAULT_FRONTEND_TEMPLATE
+  );
+
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  
+
   const rumConfigs = useRumConfigs();
-  
-  const deployment = useContractDeployment(contractType, frontendTemplate, account);
+
+  const deployment = useContractDeployment(
+    contractType,
+    frontendTemplate,
+    account
+  );
 
   const handleLaunch = async () => {
     if (!client || !account) return;
@@ -47,7 +62,6 @@ export default function LauncherContainer() {
       // Content
       pageTitle={launcherContent.page_title}
       pageDescription={launcherContent.page_description}
-      
       // State
       contractType={contractType}
       frontendTemplate={frontendTemplate}
@@ -62,7 +76,6 @@ export default function LauncherContainer() {
       previousDeployments={deployment.previousDeployments}
       addresses={deployment.addresses}
       account={account}
-      
       // Actions
       onContractTypeChange={setContractType}
       onFrontendTemplateChange={setFrontendTemplate}

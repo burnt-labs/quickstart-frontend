@@ -11,14 +11,14 @@ export function isValidIpfsUrl(url: string): boolean {
   return url.startsWith('ipfs://') || url.startsWith('https://ipfs.io/');
 }
 
-export function validateNFTName(name: string): string | null {
+export function validateAssetName(name: string): string | null {
   if (!name) return 'Name is required';
   if (name.length < 3) return 'Name must be at least 3 characters';
   if (name.length > 50) return 'Name must be less than 50 characters';
   return null;
 }
 
-export function validateNFTSymbol(symbol: string): string | null {
+export function validateAssetSymbol(symbol: string): string | null {
   if (!symbol) return 'Symbol is required';
   if (symbol.length < 2) return 'Symbol must be at least 2 characters';
   if (symbol.length > 10) return 'Symbol must be less than 10 characters';

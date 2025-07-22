@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { BaseCard } from "../BaseCard";
-import { NFT_VARIANT_INFO, type NFTType } from "../../../config/constants";
+import { ASSET_VARIANT_INFO, type AssetType, isContractAvailable } from "../../../config/constants";
 
 interface SelectTemplateCardProps {
-  selectedTemplate: NFTType;
-  onTemplateChange: (template: NFTType) => void;
+  selectedTemplate: AssetType;
+  onTemplateChange: (template: AssetType) => void;
   completed: boolean;
   expanded: boolean;
   onContinue: () => void;
@@ -24,7 +24,7 @@ export function SelectTemplateCard({
   const [isOpen, setIsOpen] = useState(false);
   const [excludeAdvanced, setExcludeAdvanced] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const selectedVariant = NFT_VARIANT_INFO[selectedTemplate];
+  const selectedVariant = ASSET_VARIANT_INFO[selectedTemplate];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -43,8 +43,11 @@ export function SelectTemplateCard({
     };
   }, [isOpen]);
 
-  // Filter variants based on advanced toggle
-  const availableVariants = Object.entries(NFT_VARIANT_INFO).filter(([type, info]) => {
+  // Filter variants based on advanced toggle and availability
+  const availableVariants = Object.entries(ASSET_VARIANT_INFO).filter(([type]) => {
+    // First check if contract is available on testnet
+    if (!isContractAvailable(type as AssetType)) return false;
+    
     if (!excludeAdvanced) return true;
     return ['cw721-base', 'cw721-updatable', 'cw2981-royalties'].includes(type);
   });
@@ -92,7 +95,7 @@ export function SelectTemplateCard({
                 <button
                   key={type}
                   onClick={() => {
-                    onTemplateChange(type as NFTType);
+                    onTemplateChange(type as AssetType);
                     setIsOpen(false);
                   }}
                   className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/10 last:border-0 ${
@@ -101,6 +104,12 @@ export function SelectTemplateCard({
                 >
                   <div className="font-medium text-white">{info.title}</div>
                   <div className="text-sm text-grey-text mt-1">{info.description}</div>
+                  {type === 'cw721-fixed-price' && (
+                    <div className="text-xs text-yellow-500 mt-1">⚠️ Requires CW20 token</div>
+                  )}
+                  {type === 'cw2981-royalties' && (
+                    <div className="text-xs text-blue-400 mt-1">ℹ️ Deploys like CW721 Base + royalty queries</div>
+                  )}
                 </button>
               ))}
             </div>
@@ -187,17 +196,17 @@ export function SelectTemplateCard({
   );
 }
 
-function getUseCasesList(type: NFTType): string[] {
-  const useCases: Record<NFTType, string[]> = {
-    "cw721-base": ["Basic NFT collections with off-chain metadata"],
-    "cw721-updatable": ["Dynamic NFTs (e.g., avatars that evolve)"],
-    "cw721-metadata-onchain": ["Fully on-chain generative art"],
-    "cw721-soulbound": ["Identity badges", "Certificates"],
-    "cw721-expiration": ["Subscription NFTs", "Time-limited memberships"],
-    "cw721-fixed-price": ["Simple marketplaces with fixed price sales"],
-    "cw721-non-transferable": ["Achievements", "Diplomas"],
-    "cw2981-royalties": ["Royalty-enabled NFTs for artists"],
+function getUseCasesList(type: AssetType): string[] {
+  const useCases: Record<AssetType, string[]> = {
+    "cw721-base": ["Basic asset collections with off-chain metadata"],
+    "cw721-updatable": ["Dynamic assets such as evolving avatars, game characters, or assets that change over time"],
+    "cw721-metadata-onchain": ["Assets where immutability and decentralization of metadata are critical (e.g., generative art, collectibles)"],
+    "cw721-soulbound": ["Credentials, identity, certifications, badges, or non-transferable memberships"],
+    "cw721-expiration": ["Time-based assets such as subscriptions, memberships, or event passes"],
+    "cw721-fixed-price": ["Launching asset collections with fixed-price sales without needing a separate marketplace contract"],
+    "cw721-non-transferable": ["Diplomas", "Licenses", "or other irreversible credentials"],
+    "cw2981-royalties": ["Asset collections where artists or creators want automatic royalty support"],
   };
   
-  return useCases[type] || ["General NFT collections"];
+  return useCases[type] || ["General asset collections"];
 }

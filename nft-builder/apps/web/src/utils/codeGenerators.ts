@@ -1,37 +1,36 @@
-import type { DeployedNFT } from "../config/nftTypes";
+import type { DeployedAsset } from "../config/assetTypes";
 import type { FrontendTemplate } from "../config/constants";
 import { FRONTEND_TEMPLATES } from "../config/constants";
 
 export function generateIntegrationCode(
-  deployedNFT: DeployedNFT,
+  deployedAsset: DeployedAsset,
   template: FrontendTemplate
 ): string {
   switch (template) {
     case FRONTEND_TEMPLATES.REACT:
-      return generateReactCode(deployedNFT);
+      return generateReactCode(deployedAsset);
     case FRONTEND_TEMPLATES.VUE:
-      return generateVueCode(deployedNFT);
+      return generateVueCode(deployedAsset);
     case FRONTEND_TEMPLATES.NEXTJS:
-      return generateNextJsCode(deployedNFT);
+      return generateNextJsCode(deployedAsset);
     case FRONTEND_TEMPLATES.VANILLA:
-      return generateVanillaCode(deployedNFT);
+      return generateVanillaCode(deployedAsset);
     default:
-      return generateReactCode(deployedNFT);
+      return generateReactCode(deployedAsset);
   }
 }
 
-function generateReactCode(nft: DeployedNFT): string {
+function generateReactCode(asset: DeployedAsset): string {
   return `import { useAbstraxionSigningClient } from "@burnt-labs/abstraxion";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { toUtf8 } from "@cosmjs/encoding";
 
-const NFT_CONTRACT = "${nft.contractAddress}";
-${nft.minterAddress ? `const MINTER_CONTRACT = "${nft.minterAddress}";` : ''}
+const ASSET_CONTRACT = "${asset.contractAddress}";
 
-export function useNFTContract() {
+export function useAssetContract() {
   const { client } = useAbstraxionSigningClient();
 
-  const mintNFT = async (recipient: string, tokenId: string) => {
+  const mintAsset = async (recipient: string, tokenId: string) => {
     if (!client) throw new Error("Client not connected");
     
     const msg = {
@@ -44,7 +43,7 @@ export function useNFTContract() {
 
     const executeMsg = MsgExecuteContract.fromPartial({
       sender: recipient,
-      contract: NFT_CONTRACT,
+      contract: ASSET_CONTRACT,
       msg: toUtf8(JSON.stringify(msg)),
       funds: [],
     });
@@ -58,7 +57,7 @@ export function useNFTContract() {
     return result;
   };
 
-  const transferNFT = async (from: string, to: string, tokenId: string) => {
+  const transferAsset = async (from: string, to: string, tokenId: string) => {
     if (!client) throw new Error("Client not connected");
     
     const msg = {
@@ -70,7 +69,7 @@ export function useNFTContract() {
 
     const executeMsg = MsgExecuteContract.fromPartial({
       sender: from,
-      contract: NFT_CONTRACT,
+      contract: ASSET_CONTRACT,
       msg: toUtf8(JSON.stringify(msg)),
       funds: [],
     });
@@ -84,22 +83,21 @@ export function useNFTContract() {
     return result;
   };
 
-  return { mintNFT, transferNFT };
+  return { mintAsset, transferAsset };
 }`;
 }
 
-function generateVueCode(nft: DeployedNFT): string {
+function generateVueCode(asset: DeployedAsset): string {
   return `<script setup lang="ts">
 import { useAbstraxionSigningClient } from "@burnt-labs/abstraxion-vue";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { toUtf8 } from "@cosmjs/encoding";
 
-const NFT_CONTRACT = "${nft.contractAddress}";
-${nft.minterAddress ? `const MINTER_CONTRACT = "${nft.minterAddress}";` : ''}
+const ASSET_CONTRACT = "${asset.contractAddress}";
 
 const { client } = useAbstraxionSigningClient();
 
-async function mintNFT(recipient: string, tokenId: string) {
+async function mintAsset(recipient: string, tokenId: string) {
   if (!client.value) throw new Error("Client not connected");
   
   const msg = {
@@ -112,7 +110,7 @@ async function mintNFT(recipient: string, tokenId: string) {
 
   const executeMsg = MsgExecuteContract.fromPartial({
     sender: recipient,
-    contract: NFT_CONTRACT,
+    contract: ASSET_CONTRACT,
     msg: toUtf8(JSON.stringify(msg)),
     funds: [],
   });
@@ -128,17 +126,16 @@ async function mintNFT(recipient: string, tokenId: string) {
 </script>`;
 }
 
-function generateNextJsCode(nft: DeployedNFT): string {
+function generateNextJsCode(asset: DeployedAsset): string {
   return `"use client";
 
 import { useAbstraxionSigningClient } from "@burnt-labs/abstraxion";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { toUtf8 } from "@cosmjs/encoding";
 
-const NFT_CONTRACT = "${nft.contractAddress}";
-${nft.minterAddress ? `const MINTER_CONTRACT = "${nft.minterAddress}";` : ''}
+const ASSET_CONTRACT = "${asset.contractAddress}";
 
-export function NFTActions() {
+export function AssetActions() {
   const { client } = useAbstraxionSigningClient();
 
   const handleMint = async () => {
@@ -158,7 +155,7 @@ export function NFTActions() {
 
       const executeMsg = MsgExecuteContract.fromPartial({
         sender: client.senderAddress,
-        contract: NFT_CONTRACT,
+        contract: ASSET_CONTRACT,
         msg: toUtf8(JSON.stringify(msg)),
         funds: [],
       });
@@ -177,19 +174,18 @@ export function NFTActions() {
 
   return (
     <button onClick={handleMint} className="btn btn-primary">
-      Mint NFT
+      Mint Asset
     </button>
   );
 }`;
 }
 
-function generateVanillaCode(nft: DeployedNFT): string {
+function generateVanillaCode(asset: DeployedAsset): string {
   return `import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { GasPrice } from "@cosmjs/stargate";
 
-const NFT_CONTRACT = "${nft.contractAddress}";
-${nft.minterAddress ? `const MINTER_CONTRACT = "${nft.minterAddress}";` : ''}
+const ASSET_CONTRACT = "${asset.contractAddress}";
 const RPC_ENDPOINT = "${import.meta.env.VITE_RPC_URL || 'https://rpc.xion-testnet-2.burnt.com:443'}";
 
 async function connectWallet() {
@@ -210,7 +206,7 @@ async function connectWallet() {
   throw new Error("Keplr wallet not found");
 }
 
-async function mintNFT(tokenId, metadata) {
+async function mintAsset(tokenId, metadata) {
   const { client, address } = await connectWallet();
   
   const msg = {
@@ -223,10 +219,10 @@ async function mintNFT(tokenId, metadata) {
 
   const result = await client.execute(
     address,
-    NFT_CONTRACT,
+    ASSET_CONTRACT,
     msg,
     "auto",
-    "Minting NFT"
+    "Minting Asset"
   );
   
   return result;
@@ -237,7 +233,7 @@ document.getElementById('mintButton').addEventListener('click', async () => {
   try {
     const tokenId = Date.now().toString();
     const metadata = "ipfs://YOUR_METADATA_CID/metadata.json";
-    const result = await mintNFT(tokenId, metadata);
+    const result = await mintAsset(tokenId, metadata);
     console.log("Minted successfully:", result);
   } catch (error) {
     console.error("Minting failed:", error);

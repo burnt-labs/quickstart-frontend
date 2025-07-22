@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
-import type { NFTConfig } from "../config/nftTypes";
+import type { AssetConfig } from "../config/assetTypes";
 import { DEFAULT_ROYALTY_PERCENTAGE, DEFAULT_MAX_SUPPLY, DEFAULT_MINT_PRICE } from "../config/constants";
 
-const initialConfig: NFTConfig = {
+const initialConfig: AssetConfig = {
   name: "",
   symbol: "",
   description: "",
@@ -16,10 +16,10 @@ const initialConfig: NFTConfig = {
   isFreezable: false,
 };
 
-export function useNFTConfig() {
-  const [config, setConfig] = useState<NFTConfig>(initialConfig);
+export function useAssetConfig() {
+  const [config, setConfig] = useState<AssetConfig>(initialConfig);
 
-  const updateConfig = useCallback((updates: Partial<NFTConfig>) => {
+  const updateConfig = useCallback((updates: Partial<AssetConfig>) => {
     setConfig((prev) => ({ ...prev, ...updates }));
   }, []);
 

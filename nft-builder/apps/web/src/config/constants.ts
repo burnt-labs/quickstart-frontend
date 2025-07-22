@@ -1,5 +1,5 @@
-// NFT Contract Types - XION CW721 Variants
-export const NFT_TYPES = {
+// Asset Contract Types - XION CW721 Variants
+export const ASSET_TYPES = {
   CW721_BASE: "cw721-base",
   CW721_UPDATABLE: "cw721-updatable",
   CW721_METADATA_ONCHAIN: "cw721-metadata-onchain",
@@ -10,79 +10,82 @@ export const NFT_TYPES = {
   CW2981_ROYALTIES: "cw2981-royalties",
 } as const;
 
-export type NFTType = typeof NFT_TYPES[keyof typeof NFT_TYPES];
+export type AssetType = typeof ASSET_TYPES[keyof typeof ASSET_TYPES];
 
-export const DEFAULT_NFT_TYPE = NFT_TYPES.CW721_BASE;
+export const DEFAULT_ASSET_TYPE = ASSET_TYPES.CW721_BASE;
 
 // Contract variant features
-export const NFT_VARIANT_INFO = {
-  [NFT_TYPES.CW721_BASE]: {
+export const ASSET_VARIANT_INFO = {
+  [ASSET_TYPES.CW721_BASE]: {
     title: "CW721 Base",
-    description: "Standard NFT with basic features",
+    description: "Standard Asset with basic features",
     features: ["Transferable", "Off-chain metadata", "Approved operators"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw721-base",
     transferable: true,
     onChainMetadata: false,
     updatableMetadata: false,
   },
-  [NFT_TYPES.CW721_UPDATABLE]: {
+  [ASSET_TYPES.CW721_UPDATABLE]: {
     title: "CW721 Updatable",
-    description: "NFT with updatable metadata",
+    description: "Asset with updatable metadata (Not available on testnet)",
     features: ["Transferable", "Off-chain metadata", "Updatable metadata"],
     repo: "https://crates.io/crates/cw721-updatable",
     transferable: true,
     onChainMetadata: false,
     updatableMetadata: true,
+    available: false,
   },
-  [NFT_TYPES.CW721_METADATA_ONCHAIN]: {
+  [ASSET_TYPES.CW721_METADATA_ONCHAIN]: {
     title: "CW721 On-chain Metadata",
-    description: "NFT with metadata stored on-chain",
+    description: "Asset with metadata stored on-chain",
     features: ["Transferable", "On-chain metadata", "Immutable metadata"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw721-metadata-onchain",
     transferable: true,
     onChainMetadata: true,
     updatableMetadata: false,
   },
-  [NFT_TYPES.CW721_SOULBOUND]: {
+  [ASSET_TYPES.CW721_SOULBOUND]: {
     title: "CW721 Soulbound",
-    description: "Non-transferable NFT (SBT)",
+    description: "Non-transferable Asset (Not available on testnet)",
     features: ["Non-transferable", "Off-chain metadata", "Identity/Badges"],
     repo: "https://crates.io/crates/cw721-soulbound",
     transferable: false,
     onChainMetadata: false,
     updatableMetadata: false,
+    available: false,
   },
-  [NFT_TYPES.CW721_EXPIRATION]: {
+  [ASSET_TYPES.CW721_EXPIRATION]: {
     title: "CW721 Expiration",
-    description: "NFT with expiration timestamps",
+    description: "Asset with expiration timestamps",
     features: ["Transferable", "Off-chain metadata", "Time-based expiry"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw721-expiration",
     transferable: true,
     onChainMetadata: false,
     updatableMetadata: true,
   },
-  [NFT_TYPES.CW721_FIXED_PRICE]: {
+  [ASSET_TYPES.CW721_FIXED_PRICE]: {
     title: "CW721 Fixed Price",
-    description: "NFT with built-in marketplace",
-    features: ["Transferable", "Off-chain metadata", "Fixed price sales"],
+    description: "Asset with built-in marketplace (requires CW20 token)",
+    features: ["Transferable", "Off-chain metadata", "Fixed price sales", "CW20 payments only"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw721-fixed-price",
     transferable: true,
     onChainMetadata: false,
     updatableMetadata: true,
+    limitations: "Requires CW20 token for payments. Does not support native XION or IBC tokens (like USDC). For open minting with native tokens, consider using separate marketplace contracts.",
   },
-  [NFT_TYPES.CW721_NON_TRANSFERABLE]: {
+  [ASSET_TYPES.CW721_NON_TRANSFERABLE]: {
     title: "CW721 Non-transferable",
-    description: "Permanent, immutable NFT",
+    description: "Permanent, immutable Asset",
     features: ["Non-transferable", "Off-chain metadata", "No burning"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw721-non-transferable",
     transferable: false,
     onChainMetadata: false,
     updatableMetadata: false,
   },
-  [NFT_TYPES.CW2981_ROYALTIES]: {
+  [ASSET_TYPES.CW2981_ROYALTIES]: {
     title: "CW2981 Royalties",
-    description: "NFT with royalty support",
-    features: ["Transferable", "On-chain metadata", "On-chain royalties"],
+    description: "Standard CW721 with royalty query support (royalties set at mint)",
+    features: ["Transferable", "Royalty queries", "Marketplace integration"],
     repo: "https://github.com/public-awesome/cw-nfts/tree/main/contracts/cw2981-royalties",
     transferable: true,
     onChainMetadata: true,
@@ -96,28 +99,47 @@ export const DEFAULT_MAX_SUPPLY = 10000;
 export const DEFAULT_MINT_PRICE = "1000000"; // 1 XION in uxion
 
 // Contract code IDs on XION testnet
-// These would be populated from actual deployed contracts
+// 0 means the contract is not deployed
 export const CONTRACT_CODE_IDS = {
-  [NFT_TYPES.CW721_BASE]: 0, // To be filled with actual code ID
-  [NFT_TYPES.CW721_UPDATABLE]: 0,
-  [NFT_TYPES.CW721_METADATA_ONCHAIN]: 0,
-  [NFT_TYPES.CW721_SOULBOUND]: 0,
-  [NFT_TYPES.CW721_EXPIRATION]: 0,
-  [NFT_TYPES.CW721_FIXED_PRICE]: 0,
-  [NFT_TYPES.CW721_NON_TRANSFERABLE]: 0,
-  [NFT_TYPES.CW2981_ROYALTIES]: 0,
+  [ASSET_TYPES.CW721_BASE]: 522,
+  [ASSET_TYPES.CW721_UPDATABLE]: 0, // Not deployed on testnet
+  [ASSET_TYPES.CW721_METADATA_ONCHAIN]: 525,
+  [ASSET_TYPES.CW721_SOULBOUND]: 0, // Not deployed on testnet
+  [ASSET_TYPES.CW721_EXPIRATION]: 523,
+  [ASSET_TYPES.CW721_FIXED_PRICE]: 524,
+  [ASSET_TYPES.CW721_NON_TRANSFERABLE]: 526,
+  [ASSET_TYPES.CW2981_ROYALTIES]: 528,
 } as const;
+
+// Helper to check if a contract is available
+export const isContractAvailable = (assetType: AssetType): boolean => {
+  return CONTRACT_CODE_IDS[assetType] > 0;
+};
 
 // Contract source codes (WASM binaries would be stored/referenced here)
 export const CONTRACT_SOURCES = {
-  [NFT_TYPES.CW721_BASE]: "xion:cw721-base:latest",
-  [NFT_TYPES.CW721_UPDATABLE]: "xion:cw721-updatable:latest",
-  [NFT_TYPES.CW721_METADATA_ONCHAIN]: "xion:cw721-metadata-onchain:latest",
-  [NFT_TYPES.CW721_SOULBOUND]: "xion:cw721-soulbound:latest",
-  [NFT_TYPES.CW721_EXPIRATION]: "xion:cw721-expiration:latest",
-  [NFT_TYPES.CW721_FIXED_PRICE]: "xion:cw721-fixed-price:latest",
-  [NFT_TYPES.CW721_NON_TRANSFERABLE]: "xion:cw721-non-transferable:latest",
-  [NFT_TYPES.CW2981_ROYALTIES]: "xion:cw2981-royalties:latest",
+  [ASSET_TYPES.CW721_BASE]: "xion:cw721-base:latest",
+  [ASSET_TYPES.CW721_UPDATABLE]: "xion:cw721-updatable:latest",
+  [ASSET_TYPES.CW721_METADATA_ONCHAIN]: "xion:cw721-metadata-onchain:latest",
+  [ASSET_TYPES.CW721_SOULBOUND]: "xion:cw721-soulbound:latest",
+  [ASSET_TYPES.CW721_EXPIRATION]: "xion:cw721-expiration:latest",
+  [ASSET_TYPES.CW721_FIXED_PRICE]: "xion:cw721-fixed-price:latest",
+  [ASSET_TYPES.CW721_NON_TRANSFERABLE]: "xion:cw721-non-transferable:latest",
+  [ASSET_TYPES.CW2981_ROYALTIES]: "xion:cw2981-royalties:latest",
+} as const;
+
+// Contract checksums for deterministic instantiate2 addresses
+export const INSTANTIATE_CHECKSUMS = {
+  base: "e13aa30e0d70ea895b294ad1bc809950e60fe081b322b1657f75b67be6021b1c",
+  updatable: "0000000000000000000000000000000000000000000000000000000000000000",
+  metadata_onchain: "51a70227ff5dc29c38dc514b0f32bb474ecb82fffa3c029c6789578a55925143",
+  soulbound: "0000000000000000000000000000000000000000000000000000000000000000",
+  expiration: "ec8fe99c35618d786c6dc5f83293fc37cd98c4a297cf6aa9d150f64941e6442d",
+  fixed_price: "a58ee79215200778768fe3862f7c995b1be35fbf3ab34c2de715e5b9d77dccbb",
+  non_transferable: "68d5db29833b0c25a1dd4c8d837038528e521ef3622d9945ffcb0b70676fcabe",
+  royalties: "5bc7ce4a04a747fafd1a139f2db73e7eac094c6d3882af8e055d15ffd3ee67e8",
+  nft: "0000000000000000000000000000000000000000000000000000000000000000", // Default
+  minter: "0000000000000000000000000000000000000000000000000000000000000000", // Minter contract
 } as const;
 
 // Frontend templates for generated code

@@ -1,7 +1,7 @@
 {
-  "name": "nft-builder-ui",
+  "name": "asset-builder-ui",
   "version": "0.0.1",
-  "description": "Shared UI components for NFT Builder",
+  "description": "Shared UI components for Asset Builder",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

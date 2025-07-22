@@ -6,7 +6,7 @@ export interface ContractInfo {
   label: string;
 }
 
-export interface NFTContractInfo extends ContractInfo {
+export interface AssetContractInfo extends ContractInfo {
   name: string;
   symbol: string;
   minter?: string;

@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DeploymentModeCard } from "./cards/DeploymentModeCard";
 import { SelectTemplateCard } from "./cards/SelectTemplateCard";
 import { BasicInputsCard } from "./cards/BasicInputsCard";
 import { AdvancedOptionsCard } from "./cards/AdvancedOptionsCard";
 import { UploadDeployCard } from "./cards/UploadDeployCard";
-import type { NFTType } from "../../config/constants";
-import type { NFTConfig } from "../../config/nftTypes";
-import { DEFAULT_NFT_TYPE } from "../../config/constants";
-import { useNFTConfig } from "../../hooks/useNFTConfig";
+import type { AssetType } from "../../config/constants";
+import { DEFAULT_ASSET_TYPE } from "../../config/constants";
+import { useAssetConfig } from "../../hooks/useAssetConfig";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "@burnt-labs/abstraxion";
+import { useAssetDeployment } from "../../hooks/useAssetDeployment";
 
 type CardStep = 'deployment-mode' | 'select-template' | 'basic-inputs' | 'advanced-options' | 'upload-deploy';
 
@@ -16,10 +17,11 @@ interface CardState {
   expanded: boolean;
 }
 
-export function NFTBuilderV2() {
+export function AssetBuilderV2() {
   const [deploymentMode, setDeploymentMode] = useState<'template' | 'custom' | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<NFTType>(DEFAULT_NFT_TYPE);
-  const nftConfig = useNFTConfig();
+  const [selectedTemplate, setSelectedTemplate] = useState<AssetType>(DEFAULT_ASSET_TYPE);
+  const assetConfig = useAssetConfig();
+  const { data: account } = useAbstraxionAccount();
   
   // Track card states
   const [cardStates, setCardStates] = useState<Record<CardStep, CardState>>({
@@ -53,9 +55,31 @@ export function NFTBuilderV2() {
     updateCardState(card, { expanded: true });
   };
 
+  // Update royalty payment address when account changes
+  useEffect(() => {
+    if (account?.bech32Address && selectedTemplate === 'cw2981-royalties') {
+      assetConfig.updateConfig({
+        royaltyPaymentAddress: account.bech32Address
+      });
+    }
+  }, [account?.bech32Address, selectedTemplate]);
+
+  // Get deployment functionality
+  const { client: signingClient } = useAbstraxionSigningClient();
+  const deployment = useAssetDeployment(selectedTemplate, account);
+  
+
   const handleDeploy = async () => {
-    console.log("Deploying NFT with config:", nftConfig.config);
-    // Deployment logic here
+    if (!account?.bech32Address || !signingClient) {
+      console.error("Wallet not connected or signing client not available");
+      return;
+    }
+
+    await deployment.deployAsset({
+      senderAddress: account.bech32Address,
+      client: signingClient,
+      assetConfig: assetConfig.config,
+    });
   };
 
   return (
@@ -91,8 +115,8 @@ export function NFTBuilderV2() {
             />
 
             <BasicInputsCard
-              config={nftConfig.config}
-              onConfigChange={nftConfig.updateConfig}
+              config={assetConfig.config}
+              onConfigChange={assetConfig.updateConfig}
               completed={cardStates['basic-inputs'].completed}
               expanded={cardStates['basic-inputs'].expanded}
               onContinue={() => handleCardComplete('basic-inputs', 'advanced-options')}
@@ -101,8 +125,8 @@ export function NFTBuilderV2() {
             />
 
             <AdvancedOptionsCard
-              config={nftConfig.config}
-              onConfigChange={nftConfig.updateConfig}
+              config={assetConfig.config}
+              onConfigChange={assetConfig.updateConfig}
               selectedTemplate={selectedTemplate}
               completed={cardStates['advanced-options'].completed}
               expanded={cardStates['advanced-options'].expanded}
@@ -112,13 +136,18 @@ export function NFTBuilderV2() {
             />
 
             <UploadDeployCard
-              config={nftConfig.config}
-              onConfigChange={nftConfig.updateConfig}
+              config={assetConfig.config}
+              onConfigChange={assetConfig.updateConfig}
               completed={cardStates['upload-deploy'].completed}
               expanded={cardStates['upload-deploy'].expanded}
               onDeploy={handleDeploy}
               onEdit={() => handleCardEdit('upload-deploy')}
               disabled={!cardStates['advanced-options'].completed}
+              isPending={deployment.isPending}
+              isSuccess={deployment.isSuccess}
+              errorMessage={deployment.errorMessage}
+              transactionHash={deployment.transactionHash}
+              deployedAsset={deployment.deployedAsset}
             />
           </>
         )}

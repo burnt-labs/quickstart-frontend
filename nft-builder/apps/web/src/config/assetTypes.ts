@@ -1,22 +1,22 @@
-export interface NFTMetadata {
+export interface AssetMetadata {
   name: string;
   description: string;
   image: string;
   external_url?: string;
-  attributes?: NFTAttribute[];
+  attributes?: AssetAttribute[];
   background_color?: string;
   animation_url?: string;
   youtube_url?: string;
 }
 
-export interface NFTAttribute {
+export interface AssetAttribute {
   trait_type: string;
   value: string | number;
   display_type?: "number" | "boost_number" | "boost_percentage" | "date";
   max_value?: number;
 }
 
-export interface NFTConfig {
+export interface AssetConfig {
   // Basic info
   name: string;
   symbol: string;
@@ -65,10 +65,8 @@ export interface NFTConfig {
   isTransferable?: boolean;
 }
 
-export interface DeployedNFT {
+export interface DeployedAsset {
   contractAddress: string;
-  minterAddress?: string;
-  marketplaceAddress?: string;
   name: string;
   symbol: string;
   type: string;

@@ -1,11 +1,11 @@
-# NFT Contract Builder for XION
+# Asset Contract Builder for XION
 
-A comprehensive tool for deploying NFT contracts on the XION blockchain with an intuitive step-by-step interface.
+A comprehensive tool for deploying Asset contracts on the XION blockchain with an intuitive step-by-step interface.
 
 ## 🚀 Features
 
-- **Multiple NFT Types**: Support for Basic NFTs, NFTs with Royalties, Full Collections, and Marketplace integration
-- **Step-by-Step Configuration**: Guided wizard for configuring all NFT parameters
+- **Multiple Asset Types**: Support for Basic Assets, Assets with Royalties, Full Collections, and Marketplace integration
+- **Step-by-Step Configuration**: Guided wizard for configuring all Asset parameters
 - **Wallet Integration**: Seamless connection with Abstraxion wallet
 - **Code Generation**: Automatic generation of integration code for React, Vue, Next.js, and Vanilla JS
 - **Monorepo Architecture**: Clean separation of concerns with shared packages
@@ -13,7 +13,7 @@ A comprehensive tool for deploying NFT contracts on the XION blockchain with an 
 ## 📦 Project Structure
 
 ```
-nft-builder/
+asset-builder/
 ├── apps/
 │   └── web/                 # Main React application
 ├── packages/
@@ -51,7 +51,7 @@ nft-builder/
 
 4. Configure your `.env.local` with:
    - XION RPC and REST URLs
-   - NFT contract code IDs
+   - Asset contract code IDs
    - Other optional configurations
 
 ### Development
@@ -71,8 +71,8 @@ pnpm build
 ## 🎯 Usage
 
 1. **Connect Wallet**: Use the Abstraxion button to connect your XION wallet
-2. **Select NFT Type**: Choose from Basic, With Royalties, Collection, or Marketplace
-3. **Configure NFT**:
+2. **Select Asset Type**: Choose from Basic, With Royalties, Collection, or Marketplace
+3. **Configure Asset**:
    - Basic Info: Name, symbol, description
    - Minting Rules: Supply, price, limits
    - Royalties: Percentage and payment address
@@ -100,7 +100,7 @@ pnpm build
 - Payment address
 
 ### Features
-- **Soulbound**: Non-transferable NFTs
+- **Soulbound**: Non-transferable Assets
 - **Burnable**: Allow token destruction
 - **Pausable**: Emergency pause functionality
 - **Freezable**: Permanent metadata freezing
@@ -109,23 +109,23 @@ pnpm build
 
 After deployment, the builder provides:
 
-1. **Contract Addresses**: NFT, Minter, and Marketplace addresses
+1. **Contract Addresses**: Asset, Minter, and Marketplace addresses
 2. **Environment Variables**: Ready-to-use .env configuration
 3. **Integration Code**: Framework-specific code snippets
 
 ### Example React Integration
 
 ```typescript
-import { useNFTContract } from './hooks/useNFTContract';
+import { useAssetContract } from './hooks/useAssetContract';
 
 function MintButton() {
-  const { mintNFT } = useNFTContract();
+  const { mintAsset } = useAssetContract();
   
   const handleMint = async () => {
-    await mintNFT(recipientAddress, tokenId);
+    await mintAsset(recipientAddress, tokenId);
   };
   
-  return <button onClick={handleMint}>Mint NFT</button>;
+  return <button onClick={handleMint}>Mint Asset</button>;
 }
 ```
 
@@ -162,4 +162,4 @@ MIT License - see LICENSE file for details
 - [ ] Batch minting functionality
 - [ ] Analytics dashboard
 - [ ] Mainnet deployment support
-- [ ] Additional NFT standards support
+- [ ] Additional Asset standards support

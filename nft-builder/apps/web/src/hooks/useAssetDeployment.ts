@@ -1,18 +1,18 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { type GranteeSignerClient } from "@burnt-labs/abstraxion";
-import { useLaunchNFTTransaction } from "./useLaunchNFTTransaction";
+import { useLaunchAssetTransaction } from "./useLaunchAssetTransaction";
 import { formatEnvText } from "../utils/formatters";
-import { NFTDeploymentService } from "../services/NFTDeploymentService";
-import type { NFTType, FrontendTemplate } from "../config/constants";
-import type { NFTConfig, DeployedNFT } from "../config/nftTypes";
+import { AssetDeploymentService } from "../services/AssetDeploymentService";
+import type { AssetType } from "../config/constants";
+import type { AssetConfig, DeployedAsset } from "../config/assetTypes";
 
 const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.xion-testnet-2.burnt.com:443";
 const REST_URL = import.meta.env.VITE_REST_URL || "https://api.xion-testnet-2.burnt.com";
 
-export interface NFTDeploymentResult {
+export interface AssetDeploymentResult {
   // State
-  deployedNFT: DeployedNFT | null;
+  deployedAsset: DeployedAsset | null;
   transactionHash: string;
   errorMessage: string;
   isPending: boolean;
@@ -22,34 +22,33 @@ export interface NFTDeploymentResult {
   textboxValue: string;
   
   // Actions
-  deployNFT: (params: {
+  deployAsset: (params: {
     senderAddress: string;
     client: GranteeSignerClient;
-    nftConfig: NFTConfig;
+    assetConfig: AssetConfig;
   }) => Promise<void>;
   clearError: () => void;
 }
 
-export function useNFTDeployment(
-  nftType: NFTType,
-  frontendTemplate: FrontendTemplate,
+export function useAssetDeployment(
+  assetType: AssetType,
   account?: { bech32Address: string }
-): NFTDeploymentResult {
+): AssetDeploymentResult {
   const queryClient = useQueryClient();
-  const [deployedNFT, setDeployedNFT] = useState<DeployedNFT | null>(null);
+  const [deployedAsset, setDeployedAsset] = useState<DeployedAsset | null>(null);
   const [transactionHash, setTransactionHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const deploymentService = useMemo(
-    () => new NFTDeploymentService(queryClient),
+    () => new AssetDeploymentService(queryClient),
     [queryClient]
   );
 
-  const { mutateAsync: launchNFTTransaction, isPending } = useLaunchNFTTransaction({
+  const { mutateAsync: launchAssetTransaction, isPending } = useLaunchAssetTransaction({
     onSuccess: async (data) => {
-      const result = deploymentService.processNFTDeployment(data, nftType);
+      const result = deploymentService.processAssetDeployment(data, assetType);
       
-      setDeployedNFT(result.deployedNFT);
+      setDeployedAsset(result.deployedAsset);
       setTransactionHash(result.transactionHash);
       
       if (account) {
@@ -57,25 +56,25 @@ export function useNFTDeployment(
       }
     },
     onError: (error) => {
-      setErrorMessage(error.message || "Failed to deploy NFT contract");
+      setErrorMessage(error.message || "Failed to deploy asset contract");
     },
   });
 
-  const deployNFT = async ({
+  const deployAsset = async ({
     senderAddress,
     client,
-    nftConfig,
+    assetConfig,
   }: {
     senderAddress: string;
     client: GranteeSignerClient;
-    nftConfig: NFTConfig;
+    assetConfig: AssetConfig;
   }) => {
     setErrorMessage("");
-    await launchNFTTransaction({
+    await launchAssetTransaction({
       senderAddress,
       client,
-      nftConfig,
-      nftType,
+      assetConfig,
+      assetType,
     });
   };
 
@@ -86,25 +85,23 @@ export function useNFTDeployment(
   const isSuccess = !!transactionHash && !errorMessage;
 
   const textboxValue = useMemo(() => {
-    if (!deployedNFT) return "";
+    if (!deployedAsset) return "";
     
     return formatEnvText({
-      NFT_CONTRACT_ADDRESS: deployedNFT.contractAddress,
-      NFT_MINTER_ADDRESS: deployedNFT.minterAddress || "",
-      NFT_MARKETPLACE_ADDRESS: deployedNFT.marketplaceAddress || "",
+      ASSET_CONTRACT_ADDRESS: deployedAsset.contractAddress,
       RPC_URL,
       REST_URL,
     });
-  }, [deployedNFT]);
+  }, [deployedAsset]);
 
   return {
-    deployedNFT,
+    deployedAsset,
     transactionHash,
     errorMessage,
     isPending,
     isSuccess,
     textboxValue,
-    deployNFT,
+    deployAsset,
     clearError,
   };
 }

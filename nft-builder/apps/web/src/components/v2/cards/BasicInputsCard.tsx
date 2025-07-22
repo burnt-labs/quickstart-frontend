@@ -1,10 +1,10 @@
 import { BaseCard } from "../BaseCard";
-import type { NFTConfig } from "../../../config/nftTypes";
+import type { AssetConfig } from "../../../config/assetTypes";
 import { Input, Textarea, FormField } from "../../ui/form";
 
 interface BasicInputsCardProps {
-  config: NFTConfig;
-  onConfigChange: (config: Partial<NFTConfig>) => void;
+  config: AssetConfig;
+  onConfigChange: (config: Partial<AssetConfig>) => void;
   completed: boolean;
   expanded: boolean;
   onContinue: () => void;
@@ -41,7 +41,7 @@ export function BasicInputsCard({
               id="name"
               value={config.name || ''}
               onChange={(e) => onConfigChange({ name: e.target.value })}
-              placeholder="My NFT Collection"
+              placeholder="My Asset Collection"
             />
           </FormField>
 
@@ -56,7 +56,7 @@ export function BasicInputsCard({
               id="symbol"
               value={config.symbol || ''}
               onChange={(e) => onConfigChange({ symbol: e.target.value.toUpperCase() })}
-              placeholder="MYNFT"
+              placeholder="MYASSET"
               maxLength={10}
             />
           </FormField>
@@ -68,7 +68,7 @@ export function BasicInputsCard({
             id="description"
             value={config.description || ''}
             onChange={(e) => onConfigChange({ description: e.target.value })}
-            placeholder="Describe your NFT collection..."
+            placeholder="Describe your asset collection..."
             rows={4}
           />
         </FormField>

@@ -6,7 +6,7 @@ export function NotLoggedIn() {
           Connect Your Wallet
         </h2>
         <p className="text-gray-600 mb-6">
-          Please connect your wallet to start building and deploying NFT contracts on XION.
+          Please connect your wallet to start building and deploying asset contracts on XION.
         </p>
         <p className="text-sm text-gray-500">
           Use the connect button in the header to get started.

@@ -138,6 +138,15 @@ The app uses deterministic salt generation for contract addresses:
 - Deployer automatically set as admin
 - Source: `xion:treasury:latest`
 
+### NFT Contracts
+- **CW721 Base** (522): Standard NFT with controlled minting
+- **CW721 Metadata Onchain** (525): NFTs with on-chain metadata
+- **CW721 Expiration** (523): NFTs with time-based expiry
+- **CW721 Fixed Price** (524): Requires CW20 token, not native XION
+- **CW721 Non-Transferable** (526): Permanent, non-transferable NFTs
+- **CW2981 Royalties** (528): NFTs with royalty support
+- **Not Available**: CW721 Updatable, CW721 Soulbound (no code IDs)
+
 ## Development Best Practices
 
 - Before committing run all checks

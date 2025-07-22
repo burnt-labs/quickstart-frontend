@@ -1,7 +1,7 @@
 {
-  "name": "nft-builder-utils",
+  "name": "asset-builder-utils",
   "version": "0.0.1",
-  "description": "Shared utilities for NFT Builder",
+  "description": "Shared utilities for Asset Builder",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

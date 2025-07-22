@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { BaseCard } from "../BaseCard";
-import { NFT_VARIANT_INFO } from "../../../config/constants";
-import type { NFTConfig } from "../../../config/nftTypes";
-import type { NFTType } from "../../../config/constants";
+import { ASSET_VARIANT_INFO } from "../../../config/constants";
+import type { AssetConfig } from "../../../config/assetTypes";
+import type { AssetType } from "../../../config/constants";
 import { Input, FormField } from "../../ui/form";
 
 interface AdvancedOptionsCardProps {
-  config: NFTConfig;
-  onConfigChange: (config: Partial<NFTConfig>) => void;
-  selectedTemplate: NFTType;
+  config: AssetConfig;
+  onConfigChange: (config: Partial<AssetConfig>) => void;
+  selectedTemplate: AssetType;
   completed: boolean;
   expanded: boolean;
   onContinue: () => void;
@@ -33,7 +33,7 @@ export function AdvancedOptionsCard({
   const [showWhitelist, setShowWhitelist] = useState(false);
   const [useMultipleRoyaltyRecipients, setUseMultipleRoyaltyRecipients] = useState(false);
 
-  const variantInfo = NFT_VARIANT_INFO[selectedTemplate];
+  const variantInfo = ASSET_VARIANT_INFO[selectedTemplate];
 
   // Sync royalty data with config when it changes
   useEffect(() => {
@@ -125,7 +125,7 @@ export function AdvancedOptionsCard({
   return (
     <BaseCard
       title="Advanced Options"
-      description="Configure additional features for your NFT"
+      description="Configure additional features for your asset"
       completed={completed}
       expanded={expanded}
       onEdit={onEdit}
@@ -134,7 +134,7 @@ export function AdvancedOptionsCard({
       <div className="space-y-6 mt-6">
         {/* Royalties Section - Only for royalties variant */}
         {isRoyaltiesSupported && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-base font-semibold text-white">Royalty Settings</h4>
               <span className="px-2 py-0.5 bg-primary/10 rounded text-xs text-primary">Required</span>
@@ -161,7 +161,7 @@ export function AdvancedOptionsCard({
               <button
                 onClick={toggleMultipleRecipients}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  useMultipleRoyaltyRecipients ? 'bg-primary' : 'bg-white/20'
+                  useMultipleRoyaltyRecipients ? 'bg-white/20' : 'bg-white/20'
                 }`}
               >
                 <span
@@ -186,7 +186,7 @@ export function AdvancedOptionsCard({
                 />
               </FormField>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-grey-text">Royalty Recipients</span>
                   {getTotalRoyaltyShares() !== 100 && (
@@ -257,22 +257,50 @@ export function AdvancedOptionsCard({
               </div>
             )}
 
-            <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-lg p-3 text-sm">
-              <p className="text-yellow-400">
+            <div className="bg-blue-900/20 border border-blue-600/40 rounded-lg p-4 text-sm space-y-3">
+              <div>
+                <h5 className="text-blue-400 font-semibold mb-1">How CW2981 Royalties Work:</h5>
+                <ul className="space-y-1 text-blue-300">
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Deploys exactly like a standard CW721 Base contract</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Royalty info is NOT set during deployment</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Royalties are configured when minting each token</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Adds two query endpoints: RoyaltyInfo and CheckRoyalties</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="pt-2 border-t border-blue-600/20">
+                <p className="text-yellow-400">
+                  ⚠️ These royalty settings will be saved for future use during minting, but won't affect deployment.
+                </p>
+              </div>
+              
+              <div className="text-grey-text text-xs">
                 Note: Royalties are enforced at the marketplace level. Not all marketplaces honor creator royalties.
-              </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Fixed Price Section - Only for fixed price variant */}
         {isFixedPriceVariant && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Fixed Price Settings</h4>
             <FormField 
               label="Fixed Sale Price (XION)" 
               labelClassName="text-grey-text"
-              description="The fixed price for each NFT"
+              description="The fixed price for each asset"
               required
             >
               <Input
@@ -289,12 +317,12 @@ export function AdvancedOptionsCard({
 
         {/* Expiration Section - Only for expiration variant */}
         {isExpirationVariant && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Expiration Settings</h4>
             <FormField 
               label="Default Expiration (Days)" 
               labelClassName="text-grey-text"
-              description="Number of days until NFTs expire after minting"
+              description="Number of days until assets expire after minting"
             >
               <Input
                 type="number"
@@ -309,12 +337,12 @@ export function AdvancedOptionsCard({
 
         {/* Supply Limits - Available for all variants */}
         {showSupplyLimits && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Supply Settings</h4>
             <FormField 
               label="Max Supply" 
               labelClassName="text-grey-text"
-              description="Maximum number of NFTs that can be minted"
+              description="Maximum number of assets that can be minted"
             >
               <Input
                 type="number"
@@ -329,12 +357,12 @@ export function AdvancedOptionsCard({
 
         {/* Mint Price - Not for soulbound */}
         {showMintPrice && !isSoulboundVariant && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Mint Price</h4>
             <FormField 
               label="Price (XION)" 
               labelClassName="text-grey-text"
-              description="Price to mint each NFT"
+              description="Price to mint each asset"
             >
               <Input
                 type="number"
@@ -350,12 +378,12 @@ export function AdvancedOptionsCard({
 
         {/* Per Address Limit */}
         {showPerAddressLimit && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Minting Limits</h4>
             <FormField 
               label="Per Address Limit" 
               labelClassName="text-grey-text"
-              description="Maximum NFTs per wallet address"
+              description="Maximum assets per wallet address"
             >
               <Input
                 type="number"
@@ -370,7 +398,7 @@ export function AdvancedOptionsCard({
 
         {/* Trading Time */}
         {showTradingTime && !isSoulboundVariant && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Trading Schedule</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Start Time" labelClassName="text-grey-text">
@@ -393,7 +421,7 @@ export function AdvancedOptionsCard({
 
         {/* Whitelist Settings */}
         {showWhitelist && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-base font-semibold text-white">Whitelist Settings</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Whitelist Start" labelClassName="text-grey-text">

@@ -6,7 +6,7 @@ export function SuccessMessage({ transactionHash }: SuccessMessageProps) {
   const explorerUrl = `https://explorer.testnet.xion.burnt.com/xion-testnet-2/tx/${transactionHash}`;
   
   return (
-    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+    <div className="bg-green-900/20 border border-green-600/40 rounded-lg p-4">
       <div className="flex items-start">
         <div className="flex-shrink-0">
           <svg
@@ -22,16 +22,16 @@ export function SuccessMessage({ transactionHash }: SuccessMessageProps) {
           </svg>
         </div>
         <div className="ml-3">
-          <h3 className="text-sm font-medium text-green-800">
+          <h3 className="text-sm font-medium text-green-400">
             Transaction Successful!
           </h3>
-          <div className="mt-2 text-sm text-green-700">
-            <p>Your NFT contract has been deployed successfully.</p>
+          <div className="mt-2 text-sm text-green-600">
+            <p>Your asset contract has been deployed successfully.</p>
             <a
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium underline hover:text-green-600"
+              className="font-medium underline hover:text-green-400"
             >
               View on Explorer →
             </a>

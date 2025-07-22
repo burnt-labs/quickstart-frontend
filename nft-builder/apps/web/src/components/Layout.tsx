@@ -1,9 +1,7 @@
 import { ReactNode } from "react";
 import Header from "./Header";
-import Footer from "./Footer";
 import {
   Abstraxion,
-  useAbstraxionSigningClient,
   useModal,
 } from "@burnt-labs/abstraxion";
 
@@ -13,8 +11,6 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [, setShowModal] = useModal();
-  const { client } = useAbstraxionSigningClient();
-  console.log("🚀 ~ Layout ~ client:", client)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -23,7 +19,7 @@ export default function Layout({ children }: LayoutProps) {
       <main className="flex-1 container mx-auto px-4 py-8">
         {children}
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

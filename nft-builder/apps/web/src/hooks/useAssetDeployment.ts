@@ -26,6 +26,7 @@ export interface AssetDeploymentResult {
     senderAddress: string;
     client: GranteeSignerClient;
     assetConfig: AssetConfig;
+    minterAddress?: string;
   }) => Promise<void>;
   clearError: () => void;
 }
@@ -64,10 +65,12 @@ export function useAssetDeployment(
     senderAddress,
     client,
     assetConfig,
+    minterAddress,
   }: {
     senderAddress: string;
     client: GranteeSignerClient;
     assetConfig: AssetConfig;
+    minterAddress?: string;
   }) => {
     setErrorMessage("");
     await launchAssetTransaction({
@@ -75,6 +78,7 @@ export function useAssetDeployment(
       client,
       assetConfig,
       assetType,
+      minterAddress,
     });
   };
 

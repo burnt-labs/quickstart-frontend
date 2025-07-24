@@ -18,11 +18,13 @@ export async function assembleAssetTransaction({
   saltString,
   assetConfig,
   assetType,
+  minterAddress,
 }: {
   senderAddress: string;
   saltString: string;
   assetConfig: AssetConfig;
   assetType: AssetType;
+  minterAddress?: string;
 }): Promise<AssetTransactionResult> {
   const messages: EncodeObject[] = [];
   
@@ -45,7 +47,8 @@ export async function assembleAssetTransaction({
     assetSalt,
     Asset_CODE_ID,
     assetConfig,
-    assetType
+    assetType,
+    minterAddress
   );
   messages.push(assetMessage);
 

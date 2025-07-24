@@ -139,11 +139,11 @@ export async function generateInstantiateAssetMessage(
   saltString: string,
   assetCodeId: number,
   config: AssetConfig,
-  assetType: AssetType
+  assetType: AssetType,
+  minterAddress?: string
 ): Promise<EncodeObject> {
   const salt = new TextEncoder().encode(saltString);
-  // Pass senderAddress to ensure minter is set
-  const assetInitMsg = generateAssetInitMsg(config, assetType, senderAddress);
+  const assetInitMsg = generateAssetInitMsg(config, assetType, minterAddress || senderAddress);
 
   const msgAssetMessage = MsgInstantiateContract2.fromPartial({
     sender: senderAddress,

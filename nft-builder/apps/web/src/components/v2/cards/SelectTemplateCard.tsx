@@ -182,6 +182,28 @@ export function SelectTemplateCard({
                 </ul>
               </div>
             </div>
+            
+            {/* Contract Rules & Limitations */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <h5 className="text-sm font-semibold text-white mb-2">Contract Rules & Limitations:</h5>
+              <div className="space-y-2 text-sm text-grey-text">
+                {getContractRules(selectedTemplate).map((rule, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-yellow-400">⚠️</span>
+                    <span>{rule}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Common limitation note */}
+              <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-600/40 rounded-lg">
+                <p className="text-xs text-yellow-400">
+                  <span className="font-semibold">Important:</span> Standard CW721 contracts have NO payment mechanism. 
+                  Only the designated minter can mint tokens, and minting is always FREE. 
+                  To charge for minting, you need either CW721 Fixed Price (requires CW20) or a custom minter contract.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -209,4 +231,62 @@ function getUseCasesList(type: AssetType): string[] {
   };
   
   return useCases[type] || ["General asset collections"];
+}
+
+function getContractRules(type: AssetType): string[] {
+  const rules: Record<AssetType, string[]> = {
+    "cw721-base": [
+      "Only the designated minter address can mint new tokens",
+      "Minting is FREE - no payment mechanism exists",
+      "Cannot charge for minting (no payment functionality)",
+      "Metadata stored off-chain (typically IPFS)",
+      "Requires external marketplace for any sales"
+    ],
+    "cw721-updatable": [
+      "Not available on testnet (no code ID)",
+      "Would allow metadata updates after minting"
+    ],
+    "cw721-metadata-onchain": [
+      "Only the designated minter address can mint",
+      "Minting is FREE - no payment mechanism exists",
+      "Higher gas costs due to on-chain metadata storage",
+      "Metadata cannot be updated once minted",
+      "All metadata must be provided during minting"
+    ],
+    "cw721-soulbound": [
+      "Not available on testnet (no code ID)",
+      "Would be non-transferable identity tokens"
+    ],
+    "cw721-expiration": [
+      "Only the designated minter address can mint",
+      "Minting is FREE - no payment mechanism exists",
+      "Tokens automatically expire after specified duration",
+      "Requires careful expiration management",
+      "Expiration set during minting, not deployment"
+    ],
+    "cw721-fixed-price": [
+      "REQUIRES a CW20 token address - will fail without it",
+      "Does NOT support native XION tokens",
+      "Does NOT support IBC tokens (like USDC)",
+      "CW20 tokens are rare on XION (uses Token Factory instead)",
+      "Consider using standard CW721 with external marketplace"
+    ],
+    "cw721-non-transferable": [
+      "Tokens CANNOT be transferred after minting",
+      "Tokens CANNOT be burned or destroyed",
+      "Only the designated minter address can mint",
+      "Minting is FREE - no payment mechanism exists",
+      "Permanent ownership - ideal for credentials"
+    ],
+    "cw2981-royalties": [
+      "Deploys exactly like CW721 Base contract",
+      "Only the designated minter address can mint",
+      "Minting is FREE - no payment mechanism exists",
+      "Royalty info NOT set during deployment",
+      "Royalties configured when minting each token",
+      "Requires collection_info_extension during deployment"
+    ]
+  };
+  
+  return rules[type] || ["Standard contract limitations apply"];
 }

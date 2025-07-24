@@ -13,6 +13,7 @@ interface LaunchAssetTransactionParams {
   client: GranteeSignerClient;
   assetConfig: AssetConfig;
   assetType: AssetType;
+  minterAddress?: string;
 }
 
 interface LaunchAssetTransactionResult {
@@ -28,7 +29,7 @@ export function useLaunchAssetTransaction(
   >
 ) {
   return useMutation<LaunchAssetTransactionResult, Error, LaunchAssetTransactionParams>({
-    mutationFn: async ({ senderAddress, client, assetConfig, assetType }) => {
+    mutationFn: async ({ senderAddress, client, assetConfig, assetType, minterAddress }) => {
       // Generate a unique salt based on timestamp
       const saltString = `asset-${Date.now()}`;
       
@@ -38,6 +39,7 @@ export function useLaunchAssetTransaction(
           saltString,
           assetConfig,
           assetType,
+          minterAddress,
         });
 
       const tx = await executeBatchTransaction({

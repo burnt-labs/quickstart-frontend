@@ -9,3 +9,5 @@ packages/*/dist
 .env.production.local
 .env.local
 .DS_Store
+
+package-lock.json

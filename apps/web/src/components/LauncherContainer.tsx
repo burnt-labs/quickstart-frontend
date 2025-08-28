@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
@@ -16,6 +16,7 @@ import {
   type ContractType,
 } from "../config/contractTypes";
 import launcherContent from "../content/launcher.json";
+import { useAnalytics } from "../hooks/useAnalytics";
 
 export default function LauncherContainer() {
   const [contractType, setContractType] = useState<ContractType>(
@@ -27,6 +28,7 @@ export default function LauncherContainer() {
 
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
+  const { track } = useAnalytics(account?.bech32Address);
 
   const rumConfigs = useRumConfigs();
 
@@ -36,8 +38,23 @@ export default function LauncherContainer() {
     account
   );
 
+  // Universal tracking wrapper with base data
+  const trackAction = (eventName: string, data?: Record<string, any>) => {
+    track(eventName, {
+      contract_type: contractType,
+      frontend_template: frontendTemplate,
+      ...data,
+    });
+  };
+
+  // Metrics tracker added inside the handler to reduce # of actions/boilerplate
   const handleLaunch = async () => {
     if (!client || !account) return;
+
+    trackAction('step_2_launch_clicked', {
+      contract_type: contractType, // Make explicit eventhough 0 length means standard usermap
+      rum_configs_count: contractType === CONTRACT_TYPES.RUM ? rumConfigs.configs.length : 0,
+    });
 
     try {
       if (contractType === CONTRACT_TYPES.RUM) {
@@ -56,6 +73,38 @@ export default function LauncherContainer() {
       // Error is handled by the deployment hook
     }
   };
+
+  // Track events first, items we miss can be done using onClick handlers.
+  // Track deployment success (triggers Step 4 visibility)
+  useEffect(() => {
+    if (deployment.isSuccess && deployment.transactionHash) {
+      trackAction('step_2_deployment_success', {
+        transaction_hash: deployment.transactionHash,
+        has_addresses: !!deployment.addresses,
+      });
+      
+      // Step 4 becomes visible after successful deployment
+      if (deployment.addresses) {
+        trackAction('step_4_build_visible');
+      }
+    }
+  }, [deployment.isSuccess, deployment.transactionHash, deployment.addresses]);
+
+  // Track deployment errors
+  useEffect(() => {
+    if (deployment.errorMessage) {
+      trackAction('deployment_error', {
+        error_message: deployment.errorMessage,
+      });
+    }
+  }, [deployment.errorMessage]);
+
+  // Track wallet connection (Login)
+  useEffect(() => {
+    if (account?.bech32Address) {
+      trackAction('login_wallet_connected');
+    }
+  }, [account?.bech32Address]);
 
   return (
     <LauncherView
@@ -82,6 +131,7 @@ export default function LauncherContainer() {
       onLaunch={handleLaunch}
       onErrorClose={deployment.clearError}
       onRumConfigsChange={rumConfigs.setConfigs}
+      onTrack={trackAction} // standard onclick metric handler for all buttons
     />
   );
 }

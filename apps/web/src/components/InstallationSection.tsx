@@ -10,12 +10,14 @@ interface InstallationSectionProps {
   frontendTemplate: FrontendTemplate;
   textboxValue: string;
   account: { bech32Address: string } | undefined;
+  onTrack?: (action: string) => void;
 }
 
 export function InstallationSection({
   frontendTemplate,
   textboxValue,
   account,
+  onTrack,
 }: InstallationSectionProps) {
   return (
     <article className="w-full mx-auto">
@@ -52,6 +54,7 @@ export function InstallationSection({
                 account?.bech32Address,
                 frontendTemplate
               )}
+              onTrack={onTrack}
             />
           </section>
         </Tabs.Content>

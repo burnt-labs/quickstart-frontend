@@ -4,9 +4,10 @@ import { cn } from "../utils/classname-util";
 interface CopyButtonProps {
   text: string;
   className?: string;
+  onCopy?: () => void;
 }
 
-export default function CopyButton({ text, className }: CopyButtonProps) {
+export default function CopyButton({ text, className, onCopy }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   return (
@@ -14,6 +15,7 @@ export default function CopyButton({ text, className }: CopyButtonProps) {
       onClick={() => {
         navigator.clipboard.writeText(text);
         setCopied(true);
+        onCopy?.();
         setTimeout(() => {
           setCopied(false);
         }, 2000);

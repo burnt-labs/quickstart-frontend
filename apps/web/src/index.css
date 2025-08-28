@@ -6,10 +6,15 @@
   --color-testnet-bg: rgba(255, 170, 74, 0.2);
   --color-testnet: rgb(255, 170, 74);
   --color-secondary-text: #8d8d8d;
+  --color-xion-green: #CAF033;
+  --color-xion-orange: #FFAA4A;
+  --color-xion-dark: #0A0A0A;
 }
+
 @layer base {
   :root {
     --font-dm-sans: "DM Sans", sans-serif;
+    --font-akkuratLL: "AkkuratLL", "DM Sans", sans-serif;
     --background: #090909;
     --foreground: #fff;
     --card: #1c1c1c;

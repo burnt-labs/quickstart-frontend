@@ -9,24 +9,24 @@ declare global {
 const SESSION_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds , rough timeline for onboarding of a user
 
 // Consent management through local storage (is persistent if not removed by user)
-const CONSENT_KEY = 'analytics-consent';
+export const ANALYTICS_CONSENT_KEY = 'analytics-consent';
 const VISITOR_ID_KEY = 'xion_visitor_id';
 const SESSION_START_KEY = 'session_start';
 const SESSION_ACTIVITY_KEY = 'session_last_activity';
 
 export const hasAnalyticsConsent = (): boolean => {
   if (typeof window === 'undefined') return false; // Server side rendering check
-  return localStorage.getItem(CONSENT_KEY) === 'accepted';
+  return localStorage.getItem(ANALYTICS_CONSENT_KEY) === 'accepted';
 };
 
 export const setAnalyticsConsent = (accepted: boolean) => {
   if (typeof window === 'undefined') return;
   
   if (accepted) {
-    localStorage.setItem(CONSENT_KEY, 'accepted');
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'accepted');
     initializeAnalytics();
   } else {
-    localStorage.setItem(CONSENT_KEY, 'rejected');
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'rejected');
     
     // Track anonymous rejection before clearing data
     trackAnonymousRejection();

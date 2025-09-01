@@ -71,6 +71,17 @@ export function LauncherView({
       <header className="mb-4">
         <PageTitle>{pageTitle}</PageTitle>
         <MutedText>{pageDescription}</MutedText>
+
+        {/* REMOVE ONCE TESTED */}
+        <button
+          type="button"
+          onClick={() => {
+            throw new Error("Sentry Test Error");
+          }}
+          className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Break the world
+        </button>
       </header>
 
       <ContractSelectionSection

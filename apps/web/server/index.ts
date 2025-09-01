@@ -101,6 +101,56 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
+    // Handle Sentry tunnel endpoint to forward errors to Sentry
+    if (url.pathname === "/tunnel" && request.method === "POST") {
+      try {
+        const envelope = await request.text();
+        const pieces = envelope.split("\n");
+        
+        // Parse the header to get the DSN
+        const header = JSON.parse(pieces[0]);
+        const dsn = new URL(header.dsn);
+        
+        // Construct the Sentry ingest URL
+        const projectId = dsn.pathname.replace("/", "");
+        const sentryUrl = `https://${dsn.hostname}/api/${projectId}/envelope/`;
+        
+        // Forward the envelope to Sentry
+        const response = await fetch(sentryUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-sentry-envelope",
+            "X-Forwarded-For": request.headers.get("CF-Connecting-IP") || "",
+          },
+          body: envelope,
+        });
+        
+        return new Response(null, { 
+          status: response.status,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+          }
+        });
+      } catch (error) {
+        console.error("Sentry tunnel error:", error);
+        return new Response(null, { status: 500 });
+      }
+    }
+    
+    // Handle OPTIONS for CORS preflight
+    if (url.pathname === "/tunnel" && request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        }
+      });
+    }
+
     // Handle install.sh script request
     if (url.pathname.startsWith("/install/")) {
       // Get user_address and template from query parameters if available

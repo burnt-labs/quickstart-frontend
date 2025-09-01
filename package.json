@@ -10,12 +10,19 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "deploy": "turbo run deploy",
-    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc",
-    "test": "turbo run test"
+    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
+    "test": "turbo run test",
+    "sentry:sourcemaps": "_SENTRY_RELEASE=$(sentry-cli releases propose-version) && sentry-cli releases new $_SENTRY_RELEASE --org=thames-brook-associates-llc --project=quickstart-frontend && sentry-cli sourcemaps upload --org=thames-brook-associates-llc --project=quickstart-frontend --release=$_SENTRY_RELEASE --strip-prefix 'dist/..' dist",
+    "postcf-deploy": "pnpm sentry:sourcemaps"
   },
   "packageManager": "pnpm@10.5.2",
   "devDependencies": {
+    "@sentry/cli": "^2.52.0",
     "turbo": "^2.5.1",
     "wrangler": "^4.18.0"
+  },
+  "dependencies": {
+    "@sentry/react": "^10.8.0",
+    "@sentry/vite-plugin": "^4.2.0"
   }
 }

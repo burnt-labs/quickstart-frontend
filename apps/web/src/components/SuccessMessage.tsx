@@ -3,8 +3,10 @@ import { ExternalLinkIcon } from "./icons/ExternalIcon";
 
 export function SuccessMessage({
   transactionHash,
+  onTrack,
 }: {
   transactionHash: string;
+  onTrack?: (action: string) => void;
 }) {
   const explorerUrl = `http://mintscan.io/xion-testnet/tx/${transactionHash}`;
   return (
@@ -17,6 +19,7 @@ export function SuccessMessage({
           className=" hover:border-white/40 hover:border-b"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => onTrack?.('explorer_link_clicked')}
         >
           <MutedText className="flex items-center gap-2">
             View transaction on explorer.

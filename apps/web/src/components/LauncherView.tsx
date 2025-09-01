@@ -42,6 +42,7 @@ interface LauncherViewProps {
   onLaunch: () => void;
   onErrorClose: () => void;
   onRumConfigsChange: (configs: RumConfig[]) => void;
+  onTrack?: (action: string, data?: Record<string, any>) => void;
 }
 
 export function LauncherView({
@@ -65,6 +66,7 @@ export function LauncherView({
   onLaunch,
   onErrorClose,
   onRumConfigsChange,
+  onTrack,
 }: LauncherViewProps) {
   return (
     <div className="flex flex-col w-full max-w-screen-md mx-auto">
@@ -117,7 +119,7 @@ export function LauncherView({
 
       {contractType === CONTRACT_TYPES.RUM && (isSuccess || errorMessage) && (
         <div className="w-full max-w-screen-md">
-          {isSuccess && <SuccessMessage transactionHash={transactionHash} />}
+          {isSuccess && <SuccessMessage transactionHash={transactionHash} onTrack={onTrack} />}
           {errorMessage && (
             <ErrorMessage errorMessage={errorMessage} onClose={onErrorClose} />
           )}
@@ -137,6 +139,7 @@ export function LauncherView({
             frontendTemplate={contractType === CONTRACT_TYPES.RUM ? FRONTEND_TEMPLATES.RUM : frontendTemplate}
             textboxValue={textboxValue}
             account={account}
+            onTrack={onTrack}
           />
         </>
       )}

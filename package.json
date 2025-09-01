@@ -10,7 +10,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "deploy": "turbo run deploy",
-    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
+    "cf-deploy": "wrangler deploy --config apps/web/wrangler.jsonc --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version) --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
     "test": "turbo run test",
     "sentry:sourcemaps": "_SENTRY_RELEASE=$(sentry-cli releases propose-version) && sentry-cli releases new $_SENTRY_RELEASE --org=thames-brook-associates-llc --project=quickstart-frontend && sentry-cli sourcemaps upload --org=thames-brook-associates-llc --project=quickstart-frontend --release=$_SENTRY_RELEASE --strip-prefix 'dist/..' dist",
     "postcf-deploy": "pnpm sentry:sourcemaps"

@@ -38,7 +38,7 @@ export const setAnalyticsConsent = (accepted: boolean) => {
   }
 };
 
-// Load GTM script (middle ground - clean but with GTM timing)
+// Load GTM script + timing
 const loadGTMScript = (gtmId: string) => {
   // Initialize dataLayer and push GTM start event
   window.dataLayer = window.dataLayer || [];
@@ -61,17 +61,37 @@ const trackAnonymousRejection = () => {
   const GTM_ID = import.meta.env.VITE_GTM_TRACKING_ID;
   if (!GTM_ID || typeof window === 'undefined') return;
   
-  // Initialize dataLayer if needed
+  // Initialize dataLayer if needed and send anonymous rejection event
   window.dataLayer = window.dataLayer || [];
-  
-  // Send anonymous rejection event directly to dataLayer
   window.dataLayer.push({
     event: 'consent_rejected',
     anonymize_ip: true,
     anonymous_event: true
   });
   
-  console.log('Anonymous consent rejection tracked');
+  console.log('Anonymous consent rejection tracked');  
+
+  // Clean up after sending - remove tracking completely
+  setTimeout(() => {
+    // Remove GTM script
+    const gtmScript = document.querySelector('script[src*="gtm.js"]');
+    if (gtmScript) {
+      gtmScript.remove();
+    }
+    
+    // Clear dataLayer to prevent further tracking
+    if (window.dataLayer) {
+      window.dataLayer.length = 0; // Clear array contents
+      delete window.dataLayer; // Remove entirely
+    }
+    
+    // Remove GTM container objects
+    if (window.google_tag_manager) {
+      delete window.google_tag_manager;
+    }
+    
+    console.log('All tracking cleaned up after consent rejection');
+  }, 2000); // Give GTM 2 seconds to send the rejection event
 };
 
 // Get or create a visitor ID (only if consent given)

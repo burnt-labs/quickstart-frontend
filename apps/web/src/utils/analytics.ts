@@ -1,7 +1,7 @@
 declare global {
   interface Window {
     dataLayer?: any[];
-    gtag?: (...args: any[]) => void;
+    google_tag_manager?: any;
   }
 }
 
@@ -38,64 +38,60 @@ export const setAnalyticsConsent = (accepted: boolean) => {
   }
 };
 
-// Shared GA4 script loading logic
-const loadGA4Script = (trackingId: string) => {
+// Load GTM script + timing
+const loadGTMScript = (gtmId: string) => {
+  // Initialize dataLayer and push GTM start event
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    'gtm.start': new Date().getTime(),
+    event: 'gtm.js'
+  });
+  
+  // Create and load GTM script
   const script = document.createElement('script');
   script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
+  script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
   document.head.appendChild(script);
+  
   return script;
-};
-
-// Shared gtag initialization
-const initializeGtag = () => {
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function() {
-    window.dataLayer!.push(arguments);
-  };
-  window.gtag('js', new Date());
 };
 
 // Track consent rejection anonymously (no personal data stored)
 const trackAnonymousRejection = () => {
-  const GA_TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID;
-  if (!GA_TRACKING_ID || typeof window === 'undefined') return;
+  const GTM_ID = import.meta.env.VITE_GTM_TRACKING_ID;
+  if (!GTM_ID || typeof window === 'undefined') return;
   
-  let script: HTMLScriptElement | undefined;
-  
-  // Initialize gtag if it doesn't exist
-  if (!window.gtag) {
-    initializeGtag();
-    script = loadGA4Script(GA_TRACKING_ID);
-  }
-  
-  // Use type assertion to ensure gtag is available after initialization
-  const gtag = window.gtag!;
-  
-  // Configure GA4 for anonymous tracking only
-  gtag('config', GA_TRACKING_ID, {
+  // Initialize dataLayer if needed and send anonymous rejection event
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'consent_rejected',
     anonymize_ip: true,
-    send_page_view: false,
-    client_storage: 'none',
-    advertising_features: false,
+    anonymous_event: true
   });
   
-  // Send anonymous rejection event
-  gtag('event', 'consent_rejected', {
-    anonymize_ip: true,
-    client_storage: 'none',
-    anonymize_user_id: true,
-  });
-  
-  // Clean up after sending the event (remove script if we created one)
-  if (script) {
-    setTimeout(() => {
-      script!.remove();
-      console.log('Anonymous tracking script cleaned up');
-    }, 2000); // Give it time to send the event
-  }
-  
-  console.log('Anonymous consent rejection tracked');
+  console.log('Anonymous consent rejection tracked');  
+
+  // Clean up after sending - remove tracking completely
+  setTimeout(() => {
+    // Remove GTM script
+    const gtmScript = document.querySelector('script[src*="gtm.js"]');
+    if (gtmScript) {
+      gtmScript.remove();
+    }
+    
+    // Clear dataLayer to prevent further tracking
+    if (window.dataLayer) {
+      window.dataLayer.length = 0; // Clear array contents
+      delete window.dataLayer; // Remove entirely
+    }
+    
+    // Remove GTM container objects
+    if (window.google_tag_manager) {
+      delete window.google_tag_manager;
+    }
+    
+    console.log('All tracking cleaned up after consent rejection');
+  }, 2000); // Give GTM 2 seconds to send the rejection event
 };
 
 // Get or create a visitor ID (only if consent given)
@@ -143,32 +139,25 @@ const getBaseParameters = (walletAddress?: string) => ({
   session_start: sessionStorage.getItem(SESSION_START_KEY) || new Date().toISOString(),
 });
 
-// Dynamic GA4 initialization (only called after consent)
+// Dynamic GTM initialization (only called after consent)
 let analyticsInitialized = false;
 
 const initializeAnalytics = () => {
   if (analyticsInitialized || typeof window === 'undefined') return;
   
-  const GA_TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID;
-  if (!GA_TRACKING_ID) {
-    console.warn('GA4 tracking ID not found');
+  const GTM_ID = import.meta.env.VITE_GTM_TRACKING_ID;
+  if (!GTM_ID) {
+    console.warn('GTM tracking ID not found');
     return;
   }
 
-  // Use shared initialization utilities
-  initializeGtag();
-  loadGA4Script(GA_TRACKING_ID);
-  
-  // Configure GA4 for full tracking (with consent)
-  const gtag = window.gtag!;
-  gtag('config', GA_TRACKING_ID, {
-    send_page_view: false // Manually done through trackEvent
-  });
+  // Load GTM script
+  loadGTMScript(GTM_ID);
 
   analyticsInitialized = true;
-  console.log('Analytics initialized with consent');
+  console.log('GTM initialized with consent');
   
-  // Track initial page view now that analytics is initialized
+  // Track initial page view now that GTM is initialized
   trackPageView();
 };
 
